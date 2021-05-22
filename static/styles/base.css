@@ -1,0 +1,10 @@
+.main {
+    height: 95vh;
+}
+
+.footer {
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+}
