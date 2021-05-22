@@ -8,8 +8,9 @@ class User:
 		self.gameHistory = []
 		if randomPlayer:
 			self.randomPlayer = randomPlayer
-			self.userName = generate_username(1)[0]
+			self.userName = generate_username(1).pop()
 		else:
 			self.userName = username
 			self.email = email
 			self.password = password  # needs to be hashed
+		pass
