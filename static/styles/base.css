@@ -2,9 +2,74 @@
     height: 95vh;
 }
 
+.body {
+    display: flex;
+}
+
 .footer {
-    position: absolute;
-    bottom: 5px;
-    left: 50%;
-    transform: translateX(-50%);
+    position: relative;
+    font-size: 12px;
+    margin-top: 15px;
+}
+
+.sidebar {
+    display: flex;
+    width: 280px;
+    height: 100vh;
+}
+
+.sidebar ul li:hover {
+    background: #0063ff;
+    margin-left: 5px;
+}
+
+
+.sidebar_trigger {
+    cursor: pointer;
+    height: 5vh;
+    width: 45px;
+    display: none;
+}
+
+
+.sidebar_icon {
+    font-size: 30px;
+    color: #000;
+    margin: 5px 10px;
+}
+
+@media only screen and (max-width: 700px) {
+    .body {
+        display: block;
+    }
+
+    .sidebar {
+        display: none;
+        width: 100%;
+        height: 95vh;
+        z-index: 1;
+        animation: open_sidebar 0.4s;
+    }
+
+    .sidebar_trigger {
+        display: block;
+    }
+
+    .sidebar_trigger:hover + .sidebar, .sidebar:hover {
+        display: flex;
+    }
+
+    .sidebar_trigger:hover ~ #main_block, .sidebar:hover ~ #main_block {
+        display: none;
+    }
+}
+
+@keyframes open_sidebar {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 100;
+    }
+
 }
