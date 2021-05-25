@@ -25,19 +25,22 @@
 
 
 .sidebar_trigger {
-    cursor: pointer;
     height: 5vh;
     width: 45px;
     display: none;
+    background: #fff;
 }
 
 
-.sidebar_icon {
+#sidebar_icon {
     font-size: 30px;
     color: #000;
     margin: 5px 10px;
 }
 
+/**
+For small devices
+*/
 @media only screen and (max-width: 700px) {
     .body {
         display: block;
@@ -53,6 +56,47 @@
 
     .sidebar_trigger {
         display: block;
+        text-decoration: none;
+        border: 0;
+        outline: 0;
+    }
+
+    .sidebar_trigger:hover + .sidebar, .sidebar:hover {
+        display: flex !important;
+    }
+
+    .sidebar_trigger:hover ~ #main_block, .sidebar:hover ~ #main_block {
+        display: none !important;
+    }
+}
+
+/**
+For mobile devices
+ */
+@media only screen and (max-device-width: 700px) {
+    .body {
+        display: block;
+    }
+
+    .sidebar {
+        display: none;
+        width: 100%;
+        height: 85vh;
+        z-index: 1;
+        animation: open_sidebar 0.4s;
+        font-size: 6em;
+    }
+
+    #sidebar_icon {
+        font-size: 90px;
+        margin: 10px 20px;
+    }
+
+    .sidebar_trigger {
+        display: block;
+        width: 100px;
+        outline: 0;
+        border: 0;
     }
 
     .sidebar_trigger:hover + .sidebar, .sidebar:hover {
