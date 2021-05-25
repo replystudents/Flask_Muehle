@@ -1,5 +1,15 @@
+* {
+    --background-color: #17223b;
+    --surface-color: #263859;
+    --primary-color: #6b778d;
+    --secondary-color: #ff6768;
+    --font-color: #f3f3f3
+}
+
 .main {
-    height: 95vh;
+    height: 100vh;
+    width: 100%;
+    padding: 2%;
 }
 
 .body {
@@ -16,10 +26,11 @@
     display: flex;
     width: 280px;
     height: 100vh;
+    background: var(--background-color);
 }
 
 .sidebar ul li:hover {
-    background: #0063ff;
+    background: var(--surface-color);
     margin-left: 5px;
 }
 
