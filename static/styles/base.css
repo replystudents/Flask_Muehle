@@ -10,6 +10,7 @@
     height: 100vh;
     width: 100%;
     padding: 2%;
+    margin-left: 280px;
 }
 
 .body {
@@ -24,6 +25,7 @@
 
 .sidebar {
     display: flex;
+    position: fixed;
     width: 280px;
     height: 100vh;
     background: var(--background-color);
@@ -79,6 +81,10 @@ For small devices
     .sidebar_trigger:hover ~ #main_block, .sidebar:hover ~ #main_block {
         display: none !important;
     }
+
+    .main {
+        margin-left: 0px;
+    }
 }
 
 /**
@@ -116,6 +122,10 @@ For mobile devices
 
     .sidebar_trigger:hover ~ #main_block, .sidebar:hover ~ #main_block {
         display: none;
+    }
+
+    .main {
+        margin-left: 0px;
     }
 }
 
