@@ -20,7 +20,7 @@ class GameHandler:
 		self.activeGames = {}
 
 	def queueNewGame(self, user):
-		gameId = uuid.uuid1()
+		gameId = str(uuid.uuid1())
 		self.gameQueue.setdefault(gameId, GameQueueObject(gameId, user))
 		return gameId
 
@@ -43,7 +43,7 @@ class GameHandler:
 			game.player1.user.gameHistory.append(game)
 			game.player2.user.gameHistory.append(game)
 
-	def getGame(self, gameId):
+	def getGame(self, gameId) -> GameQueueObject:
 		if self.gameQueue.get(gameId):
 			return self.gameQueue.get(gameId)
 		if self.activeGames.get(gameId):
