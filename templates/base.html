@@ -71,10 +71,10 @@
         <div class="dropdown">
             <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
                id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                <strong>{{ user.userName}}</strong>
+                <strong>{{ user.username}}</strong>
             </a>
             <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1" style="">
-                {% if user.randomPlayer %}
+                {% if user.isTmpUser %}
                 <li><a class="dropdown-item" href="/sign_in">Anmelden</a></li>
                 <li><a class="dropdown-item" href="/sign_up">Registrieren</a></li>
                 {% else %}

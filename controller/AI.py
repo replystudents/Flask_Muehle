@@ -26,18 +26,18 @@ def min_move(game: Muehle, depth, player):
 			if game.state == 'PLACE_PHASE':
 				x = move.pos_x2
 				y = move.pos_y2
-				game.executeMove(move)
+				game.executeMove(move, tmpMove=True)
 				move_rating, _ = max_move(game, depth - 1, player)
 				game.undoLastMove()
 			elif game.state == 'PLAYING_PHASE':
-				game.executeMove(move)
+				game.executeMove(move, tmpMove=True)
 				if game.isMill(game.activePlayer, move.token):
 					move_rating = min_move(game, depth, player)
 				else:
 					move_rating, _ = max_move(game, depth - 1, player)
 				game.undoLastMove()
 			elif game.state == 'MILL':
-				game.executeMove(move)
+				game.executeMove(move, tmpMove=True)
 				move_rating, _ = max_move(game, depth - 1, player)
 				game.undoLastMove()
 			elif game.state == 'END':
@@ -61,18 +61,18 @@ def max_move(game: Muehle, depth, player):
 				pass
 			move_rating = 0
 			if game.state == 'PLACE_PHASE':
-				game.executeMove(move)
+				game.executeMove(move, tmpMove=True)
 				move_rating = min_move(game, depth - 1, player)
 				game.undoLastMove()
 			elif game.state == 'PLAYING_PHASE':
-				game.executeMove(move)
+				game.executeMove(move, tmpMove=True)
 				if game.isMill(game.activePlayer, move.token):
 					move_rating, _ = max_move(game, depth, player)
 				else:
 					move_rating = min_move(game, depth - 1, player)
 				game.undoLastMove()
 			elif game.state == 'MILL':
-				game.executeMove(move)
+				game.executeMove(move, tmpMove=True)
 				move_rating = min_move(game, depth - 1, player)
 				game.undoLastMove()
 			elif game.state == 'END':

@@ -85,6 +85,7 @@ class Muehle:
 		self.board = board.copy()
 		self.state = states['init']
 		self.moves = []
+		self.positions = [board.copy()]  # stored in a minified version
 
 		# Init Token List for both players
 		for i in range(number_of_pieces):
@@ -93,13 +94,15 @@ class Muehle:
 
 		self.state = states['placePhase']
 
-	def executeMove(self, move: Move):
+	def executeMove(self, move: Move, tmpMove=False):
 		if move.place:
 			self.placeTokenOnBoard(move=move)
 		elif move.delete:
 			self.removeTokenFromBoard(move=move)
 		else:
 			self.move(move=move)
+		if tmpMove is False:
+			self.positions.append(self.getMinifiedBoard())
 
 	def placeTokenOnBoard(self, token: Token = None, pos_x=None, pos_y=None, move: Move = None):
 		if self.state == states['placePhase']:
@@ -388,6 +391,19 @@ class Muehle:
 		for i in range(7):
 			print(self.board[i])
 
+	def getMinifiedBoard(self):
+		miniBoard = []
+		for x in self.board:
+			for y in self.board[x]:
+				if self.board[x][y] != ' ':
+					if self.board[x][y] == 'X':
+						# Empty Field
+						miniBoard.append('X')
+					else:
+						# Token
+						miniBoard.append(self.board[x][y].id)
+
+		return miniBoard
 
 if __name__ == '__main__':
 	muehle = Muehle('player1', 'player2')
