@@ -1,5 +1,7 @@
 import uuid
 from controller.Muehle import Muehle
+from controller.DatabaseModels import db, Game
+import json
 
 
 class GameQueueObject:
@@ -49,3 +51,10 @@ class GameHandler:
 		if self.activeGames.get(gameId):
 			return self.activeGames.get(gameId)
 		return Exception('Game not found')
+
+	def saveGameInDB(self, gameId):
+		game = self.getGame(gameId)
+		positions = game.positions
+		dbGame = Game(game.player1, game.player2, game.winner, json.dumps(positions))
+		db.session.add(dbGame)
+		db.commit()
