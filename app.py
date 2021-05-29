@@ -1,26 +1,30 @@
 from flask import Flask, render_template, request, session, redirect
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
+from controller.DatabaseModels import db, User, Game
 from controller.GameHandler import GameHandler
-from controller.User import User
-from controller.PageHandler import PageHandler
 
 app = Flask(__name__)
 app.secret_key = "secret_key_for_the_sessions"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/muehle_db.sqlite'  # might be different in windows
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)
+db.create_all(app=app)
+
 socketio = SocketIO(app)
-pageHandler = PageHandler()
 gameHandler = GameHandler()
 
 
 def getUser():
     if "username" in session:
         username = session["username"]
-        user = pageHandler.getUser(username)
+        user = User.query.filter_by(username=username).first()
         if user:
             return user
-
-    user = User(randomPlayer=True)
-    pageHandler.addUser(user)
-    session["username"] = user.userName
+    user = User(isTmpUser=True)
+    db.session.add(user)
+    db.session.commit()
+    session["username"] = user.username
     return user
 
 
@@ -50,6 +54,7 @@ def game():
         gameid = gameHandler.queueNewGame(user)
 
         return redirect('/game/' + str(gameid) + '/')
+
     else:
         return render_template('game.html', user=user, newgame=True)
 
