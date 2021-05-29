@@ -4,6 +4,10 @@
 <link rel="stylesheet" href="/static/styles/game.css">
 <script src="https://d3js.org/d3.v5.min.js"></script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+        integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+        crossorigin="anonymous"></script>
+
 
 {% if newgame is true() %}
 <div id="popup" class="modal" style="display:block;">
@@ -15,14 +19,18 @@
             spielen möchten.</p>
         <form id="newgameform" method="post"></form>
         <div class="btn-group-vertical" role="group">
-            <button class="btn btn-primary" type="submit" form="newgameform" name="gametype" value="human" onclick="startGame()">Menschlicher Gegner</button>
-            <button class="btn btn-primary" type="submit" form="newgameform" name="gametype" value="bot" onclick="startBotGame()">Computer Gegner</button>
+            <button class="btn btn-primary" type="submit" form="newgameform" name="gametype" value="human"
+                    ">Menschlicher Gegner
+            </button>
+            <button class="btn btn-primary" type="submit" form="newgameform" name="gametype" value="bot"
+                    ">Computer Gegner
+            </button>
         </div>
 
     </div>
 </div>
 {% else %}
-<div class="modal">
+<div id="waitingpopup" class="modal">
     <div class="modal-content">
         <span class="popupheader">
             Warten auf Gegner
@@ -38,7 +46,7 @@
     <h1>Spiel</h1>
 </div>
 <div>
-    <h2>Gegner</h2>
+    <h2 id="enemyName">Gegner</h2>
 </div>
 <div>
     <svg id="game" width="100%" viewBox="0 0 400 400">
@@ -54,36 +62,36 @@
         <rect class="board" id="middlerect" x="100" y="100" width="200" height="200"></rect>
         <rect class="board" id="innerrect" x="150" y="150" width="100" height="100"></rect>
 
-        <circle id="circle1" class="dot" cx="50" cy="50" r="15"/>
-        <circle id="circle2" class="dot" cx="200" cy="50" r="15"/>
-        <circle id="circle3" class="dot" cx="350" cy="50" r="15"/>
-        <circle id="circle4" class="dot" cx="100" cy="100" r="15"/>
-        <circle id="circle5" class="dot" cx="200" cy="100" r="15"/>
-        <circle id="circle6" class="dot" cx="300" cy="100" r="15"/>
-        <circle id="circle7" class="dot" cx="150" cy="150" r="15"/>
-        <circle id="circle8" class="dot" cx="200" cy="150" r="15"/>
-        <circle id="circle9" class="dot" cx="250" cy="150" r="15"/>
-        <circle id="circle10" class="dot" cx="50" cy="200" r="15"/>
-        <circle id="circle11" class="dot" cx="100" cy="200" r="15"/>
-        <circle id="circle12" class="dot" cx="150" cy="200" r="15"/>
-        <circle id="circle13" class="dot" cx="250" cy="200" r="15"/>
-        <circle id="circle14" class="dot" cx="300" cy="200" r="15"/>
-        <circle id="circle15" class="dot" cx="350" cy="200" r="15"/>
-        <circle id="circle16" class="dot" cx="150" cy="250" r="15"/>
-        <circle id="circle17" class="dot" cx="200" cy="250" r="15"/>
-        <circle id="circle18" class="dot" cx="250" cy="250" r="15"/>
-        <circle id="circle19" class="dot" cx="100" cy="300" r="15"/>
-        <circle id="circle20" class="dot" cx="200" cy="300" r="15"/>
-        <circle id="circle21" class="dot" cx="300" cy="300" r="15"/>
-        <circle id="circle22" class="dot" cx="50" cy="350" r="15"/>
-        <circle id="circle23" class="dot" cx="200" cy="350" r="15"/>
-        <circle id="circle24" class="dot" cx="350" cy="350" r="15"/>
+        <circle id="pos-0-0" class="dot" cx="50" cy="50" r="15"/>
+        <circle id="pos-0-3" class="dot" cx="200" cy="50" r="15"/>
+        <circle id="pos-0-6" class="dot" cx="350" cy="50" r="15"/>
+        <circle id="pos-1-1" class="dot" cx="100" cy="100" r="15"/>
+        <circle id="pos-1-3" class="dot" cx="200" cy="100" r="15"/>
+        <circle id="pos-1-5" class="dot" cx="300" cy="100" r="15"/>
+        <circle id="pos-2-2" class="dot" cx="150" cy="150" r="15"/>
+        <circle id="pos-2-3" class="dot" cx="200" cy="150" r="15"/>
+        <circle id="pos-2-4" class="dot" cx="250" cy="150" r="15"/>
+        <circle id="pos-3-0" class="dot" cx="50" cy="200" r="15"/>
+        <circle id="pos-3-1" class="dot" cx="100" cy="200" r="15"/>
+        <circle id="pos-3-2" class="dot" cx="150" cy="200" r="15"/>
+        <circle id="pos-3-4" class="dot" cx="250" cy="200" r="15"/>
+        <circle id="pos-3-5" class="dot" cx="300" cy="200" r="15"/>
+        <circle id="pos-3-6" class="dot" cx="350" cy="200" r="15"/>
+        <circle id="pos-4-2" class="dot" cx="150" cy="250" r="15"/>
+        <circle id="pos-4-3" class="dot" cx="200" cy="250" r="15"/>
+        <circle id="pos-4-4" class="dot" cx="250" cy="250" r="15"/>
+        <circle id="pos-5-1" class="dot" cx="100" cy="300" r="15"/>
+        <circle id="pos-5-3" class="dot" cx="200" cy="300" r="15"/>
+        <circle id="pos-5-5" class="dot" cx="300" cy="300" r="15"/>
+        <circle id="pos-6-0" class="dot" cx="50" cy="350" r="15"/>
+        <circle id="pos-6-3" class="dot" cx="200" cy="350" r="15"/>
+        <circle id="pos-6-6" class="dot" cx="350" cy="350" r="15"/>
 
     </svg>
     <script src="/static/js/game.js"></script>
 </div>
 <div>
-    <h2>{{user.userName}}</h2>
+    <h2 id="ownName">{{user.userName}}</h2>
 </div>
 
 

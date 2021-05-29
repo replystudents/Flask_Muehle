@@ -1,73 +1,3 @@
-/**
- let selectedElement, offset, transform;
-
-
- let game = document.getElementById('game')
- let body = d3.select('body')
-
- svg = body.append('svg').attr('width', 300).attr('height', 300)
-
- svg.append('circle').attr('cx', 130).attr('cy', 130).attr('r', 15).attr('class', 'draggable').call()
-
-
- d3.selectAll(".draggable").call(d3.drag().on("start", started));
-
- function started(event) {
-    console.log("started")
-    let circle = d3.select(this).classed("dragging", true);
-    console.log(event)
-    event.on("drag", dragged).on("end", ended);
-
-    function dragged(event, d) {
-        console.log(circle)
-        circle.raise().attr("cx", d.x = event.x).attr("cy", d.y = event.y);
-    }
-
-    function ended() {
-        circle.classed("dragging", false);
-    }
-}
-
- // https://github.com/d3/d3-drag
-
- function onDragDrop(dragHandler, dropHandler) {
-    let drag = d3.drag();
-
-    drag.on("drag", dragHandler)
-        .on("dragend", dropHandler);
-    return drag;
-}
-
- let g = d3.select("body").select("svg").append("g")
- .data([{ x: 50, y: 50 }]);
-
- g.append("rect")
- .attr("width", 40)
- .attr("height", 40)
- .attr("stroke", "red")
- .attr("fill","transparent")
- .attr("x", function (d) { return d.x; })
- .attr("y", function (d) { return d.y; })
- .call(onDragDrop(dragmove, dropHandler));
-
- g.append("text")
- .text("Any Text")
- .attr("x", function (d) { return d.x; })
- .attr("y", function (d) { return d.y; })
- .call(onDragDrop(dragmove, dropHandler));
-
- function dropHandler(d) {
-    // alert('dropped');
-}
-
- function dragmove(d) {
-    d3.select(this)
-        .attr("x", d.x = d3.event.x)
-        .attr("y", d.y = d3.event.y);
-}
-
- */
-console.log(document)
 let svg = d3.select("svg#game")
 
 
@@ -97,25 +27,32 @@ window.addEventListener('resize', () => {
 //     console.log(elem.id, "mouse", mouse)
 // })
 
-let players = {player1: [], player2: []}
-let placingPhase = true;
-let hasMuehle = true;
+// let players = {player1: [], player2: []}
+// let placingPhase = true;
+// let hasMuehle = true;
+let stones = {'player1': [], 'player2': []}
+
+let iStones = {player1: 0, player2: 0}
+let player;
 
 svg.on('click', function () {
-    if (placingPhase === true) {
-        if (players["player1"].length < 9 || players["player2"].length < 9) {
-            let player = players["player2"].length < players["player1"].length ? 'player2' : 'player1';
+    if (gamedata.state === 'PLACE_PHASE') {
+        // if (players["player1"].length < 9 || players["player2"].length < 9) {
+        // let player = players["player2"].length < players["player1"].length ? 'player2' : 'player1';
 
-            let mouse = d3.mouse(this);
-            let elem = document.elementFromPoint(mouse[0] * coordinateFactorX + coordinateOffsetX, mouse[1] * coordinateFactorY + coordinateOffsetY);
-            if (elem.classList.contains("dot")) {
+        let mouse = d3.mouse(this);
+        let elem = document.elementFromPoint(mouse[0] * coordinateFactorX + coordinateOffsetX, mouse[1] * coordinateFactorY + coordinateOffsetY);
+        if (elem.classList.contains("dot")) {
+            let pos = elem.id.split('-')
 
-                addStone(player)
-            }
-        } else {
-            placingPhase = false;
+            console.log(pos)
+            placeTokenOnBoard(pos[1], pos[2])
+            // addStone()
         }
-    } else {
+        // } else {
+        //     placingPhase = false;
+        // }
+    } else if (gamedata.state === 'MILL') {
 
         // if (hasMuehle === true) {
         //     let player = 'player1'
@@ -129,24 +66,39 @@ svg.on('click', function () {
 
 })
 
-function addStone(player) {
-    let stone = svg.append("circle")
-        .attr('id', `${player}${players[player].length}`)
-        .attr('class', `player draggable ${player}`)
-        .attr("cx", Math.round(((d3.event.x - coordinateOffsetX) / coordinateFactorX) / 50) * 50)
-        .attr("cy", Math.round(((d3.event.y - coordinateOffsetY) / coordinateFactorY) / 50) * 50)
-        .attr("r", 30)
-        .on('contextmenu', function () {
-            d3.event.preventDefault()
-            removeStone();
-        });
-
-    if (player === 'player1') {
-        players["player1"].push(stone)
+function addStone(playername, pos_x, pos_y) {
+    let pos = document.getElementById('pos-' + pos_x + '-' + pos_y)
+    console.log('pos-' + pos_x + '-' + pos_y)
+    console.log(pos)
+    let stone;
+    if (playername === player) {
+        stone = svg.append("circle")
+            .attr('id', `${playername}-${iStones[playername]++}`)
+            .attr('class', `player draggable ${playername}`)
+            .attr("cx", pos.getAttribute('cx'))
+            .attr("cy", pos.getAttribute('cy'))
+            .attr("r", 30)
+        dragHandler(stone);
     } else {
-        players["player2"].push(stone)
+        stone = svg.append("circle")
+            .attr('id', `${playername}-${iStones[playername]++}`)
+            .attr('class', `player ${playername}`)
+            .attr("cx", pos.getAttribute('cx'))
+            .attr("cy", pos.getAttribute('cy'))
+            .attr("r", 30)
     }
-    dragHandler(stone);
+
+    // .on('contextmenu', function () {
+    //     d3.event.preventDefault()
+    //     removeStone();
+    // });
+
+    // if (player === 'player1') {
+    //     players["player1"].push(stone)
+    // } else {
+    //     players["player2"].push(stone)
+    // }
+
 }
 
 function removeStone() {
@@ -196,7 +148,12 @@ function dragended() {
     //console.log(elem)
     //console.log("mouse",mouse)
     hideStone(false)
+
+
     if (elem.classList.contains("dot")) {
+        let pos = elem.id.split('-')
+        moveToken(current.attr('id'), pos[1], pos[2])
+
         current
             .attr('cx', Math.round(d3.event.x / 50) * 50)
             .attr('cy', Math.round(d3.event.y / 50) * 50);
@@ -205,6 +162,10 @@ function dragended() {
             .attr('cx', startposition[0])
             .attr('cy', startposition[1]);
     }
+
+}
+
+function moveStone(playername, tokenid, pos_x, pos_y) {
 
 }
 
@@ -229,7 +190,6 @@ function placeStone() {
 }
 
 // Get the modal
-var modal = document.getElementById("popup");
 //
 // // Get the <span> element that closes the modal
 // var span = document.getElementsByClassName("close")[0];
@@ -248,29 +208,132 @@ var modal = document.getElementById("popup");
 // // }
 
 function startGame() {
-    console.log("start")
+    var modal = document.getElementById("waitingpopup");
     modal.style.display = "none";
+
+    let enemyName = document.getElementById('enemyName')
+    if (gamedata.player1 === username) {
+        player = 'player1'
+        enemyName.innerText = gamedata.player2
+    } else {
+        player = 'player2'
+        enemyName.innerText = gamedata.player1
+    }
+
+    nextMove()
 }
 
-function startBotGame() {
-    modal.style.display = "none";
+
+function nextMove() {
+    let enemyName = document.getElementById('enemyName')
+    let ownName = document.getElementById('ownName')
+    let border = document.getElementById('border')
+    if (gamedata.activePlayer === username) {
+        border.style.stroke = 'green'
+        ownName.style.color = 'green'
+        enemyName.style.color = 'black'
+    } else {
+        border.style.stroke = 'black'
+        ownName.style.color = 'black'
+        enemyName.style.color = 'green'
+    }
 }
 
 
+let gameid = false;
 let gameUrl = document.getElementById("gameUrl")
 if (gameUrl) {
     gameUrl.value = window.location.href
-
+    gameid = window.location.href.split('/')[4]
+    console.log(gameid)
     gameUrl.onclick = function copyUrl() {
 
-    /* Select the text field */
-    gameUrl.select();
-    gameUrl.setSelectionRange(0, 99999); /* For mobile devices */
+        /* Select the text field */
+        gameUrl.select();
+        gameUrl.setSelectionRange(0, 99999); /* For mobile devices */
 
-    /* Copy the text inside the text field */
-    document.execCommand("copy");
+        /* Copy the text inside the text field */
+        document.execCommand("copy");
 
-    /* Alert the copied text */
-    console.log("Copied the text: " + gameUrl.value);
+        /* Alert the copied text */
+        // console.log("Copied the text: " + gameUrl.value);
+    }
 }
+let username;
+let gamedata;
+
+let socket = io();
+if (gameid) {
+    socket.on('connect', function () {
+        socket.emit('connected', {data: 'I\'m connected!'});
+
+        socket.emit('join', {'gameid': gameid})
+    });
 }
+
+socket.on('game', function (data) {
+    username = data
+})
+
+socket.on('message', function (data) {
+    console.log('message')
+    console.log(data)
+})
+
+socket.on('json', function (json) {
+    console.log('json')
+    console.log(json)
+
+})
+
+socket.on('startGame', function (data) {
+    gamedata = data;
+    console.log(data)
+    startGame()
+})
+
+socket.on('tokenPlaced', function (data) {
+    gamedata = data
+    console.log("TOKENPLACED")
+    console.log(data)
+    addStone(data.player, data.pos_x, data.pos_y)
+    nextMove()
+})
+
+socket.on('ErrorPlacing', function (data) {
+    gamedata = data
+    console.log("ERROR Placing")
+})
+
+
+function placeTokenOnBoard(pos_x, pos_y) {
+    socket.emit('placeTokenOnBoard', {
+        'gameid': gameid,
+        'player': player,
+        'token': iStones[player],
+        'pos_x': pos_x,
+        'pos_y': pos_y
+    })
+}
+
+socket.on('tokenMoved', function (data) {
+    moveStone(data.player, data.tokenid, data.pos_x, data.pos_y)
+    nextMove()
+})
+socket.on('ErrorMoving', function (data) {
+    console.log("ERROR Moving")
+})
+
+function moveToken(token, pos_x, pos_y) {
+    socket.emit('moveToken', {
+        'gameid': gameid,
+        'player': player,
+        'token': token.split('-')[1],
+        'tokenid': token,
+        'pos_x': pos_x,
+        'pos_y': pos_y
+    })
+}
+
+
+

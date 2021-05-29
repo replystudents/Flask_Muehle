@@ -41,7 +41,7 @@ class Token:
 	def __init__(self, player, number):
 		self.player = player
 		self.number = number
-		self.id = player + '_' + str(number)
+		self.id = player.user.userName + '_' + str(number)
 		self.pos_x = -1
 		self.pos_y = -1
 
@@ -196,7 +196,7 @@ class Muehle:
 			if self.activePlayer == self.player1:
 				for token in self.player2.tokenList:
 					possibleMoves.append((token.pos_x, token.pos_y))
-		elif self.state == states['PLAYING_PHASE']:
+		elif self.state == states['playingPhase']:
 			tokens_of_player = self.activePlayer.tokenList
 			for token in tokens_of_player:
 				x = token.pos_x
@@ -267,6 +267,8 @@ class Muehle:
 				self.state = states['mill']
 			else:
 				self.nextPlayer()
+		else:
+			return Exception('Invalid Move')
 
 	def getBoard(self):
 		return self.board
