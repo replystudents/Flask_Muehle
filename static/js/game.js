@@ -12,10 +12,13 @@ function setFactorOffset() {
     coordinateOffsetY = document.getElementById("game").getBoundingClientRect().y
     coordinateFactorX = document.getElementById("game").getBoundingClientRect().width / svg.attr('viewBox').split(' ')[3]
     coordinateFactorY = document.getElementById("game").getBoundingClientRect().height / svg.attr('viewBox').split(' ')[2]
-
 }
 
 window.addEventListener('resize', () => {
+    setFactorOffset()
+})
+
+window.addEventListener('scroll', () => {
     setFactorOffset()
 })
 
