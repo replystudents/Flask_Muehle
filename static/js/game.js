@@ -35,7 +35,7 @@ svg.on('click', function () {
         if (elem.classList.contains("dot")) {
             let pos = elem.id.split('-')
 
-            console.log(pos)
+            // console.log(pos)
             placeTokenOnBoard(pos[1], pos[2])
             // addStone()
         }
@@ -63,8 +63,8 @@ svg.on('click', function () {
 
 function addStone(playername, pos_x, pos_y) {
     let pos = document.getElementById('pos-' + pos_x + '-' + pos_y)
-    console.log('pos-' + pos_x + '-' + pos_y)
-    console.log(pos)
+    // console.log('pos-' + pos_x + '-' + pos_y)
+    // console.log(pos)
     let stone;
     if (playername === player) {
         stone = svg.append("circle")
@@ -97,7 +97,7 @@ function addStone(playername, pos_x, pos_y) {
 }
 
 function removeStone(tokenid) {
-    console.log('remove:' + tokenid)
+    // console.log('remove:' + tokenid)
     d3.select('circle#' + tokenid).remove()
 }
 
@@ -116,7 +116,7 @@ function dragstarted() {
         current.raise()
         startposition[0] = current.attr("cx")
         startposition[1] = current.attr("cy")
-        //console.log("startposition", startposition)
+        //// console.log("startposition", startposition)
     }
 }
 
@@ -135,8 +135,8 @@ function dragended() {
         current.style('cursor', 'grab')
         let mouse = d3.mouse(this);
         let elem = document.elementFromPoint(mouse[0] * coordinateFactorX + coordinateOffsetX, mouse[1] * coordinateFactorY + coordinateOffsetY);
-        //console.log(elem)
-        //console.log("mouse",mouse)
+        //// console.log(elem)
+        //// console.log("mouse",mouse)
         hideStone(false)
 
 
@@ -161,10 +161,10 @@ function dragended() {
 function moveStone(playername, tokenid, pos_x, pos_y) {
     let token = d3.select('circle#' + tokenid)
     let dot = d3.select('circle#pos-' + pos_x + '-' + pos_y)
-    console.log('token')
-    console.log(token)
-    console.log('dot')
-    console.log(dot)
+    // console.log('token')
+    // console.log(token)
+    // console.log('dot')
+    // console.log(dot)
     token
         .attr('cx', dot.attr('cx'))
         .attr('cy', dot.attr('cy'))
@@ -182,7 +182,7 @@ function hideStone(hide) {
  svg.on("mousemove", function() {
     let mouse = d3.mouse(this);
     let elem = document.elementFromPoint(mouse[0], mouse[1]);
-    console.log(elem)
+    // console.log(elem)
 })
  */
 
@@ -268,7 +268,7 @@ function nextMove() {
         ownName.style.color = 'black'
         enemyName.style.color = 'green'
     }
-    console.log('Gamestate: ' + gamedata.state)
+    // console.log('Gamestate: ' + gamedata.state)
 }
 
 
@@ -277,7 +277,7 @@ let gameUrl = document.getElementById("gameUrl")
 if (gameUrl) {
     gameUrl.value = window.location.href
     gameid = window.location.href.split('/')[4]
-    console.log(gameid)
+    // console.log(gameid)
     gameUrl.onclick = function copyUrl() {
 
         /* Select the text field */
@@ -288,7 +288,7 @@ if (gameUrl) {
         document.execCommand("copy");
 
         /* Alert the copied text */
-        // console.log("Copied the text: " + gameUrl.value);
+        // // console.log("Copied the text: " + gameUrl.value);
     }
 }
 let username;
@@ -308,33 +308,33 @@ socket.on('game', function (data) {
 })
 
 socket.on('message', function (data) {
-    console.log('message')
-    console.log(data)
+    // console.log('message')
+    // console.log(data)
 })
 
 socket.on('json', function (json) {
-    console.log('json')
-    console.log(json)
+    // console.log('json')
+    // console.log(json)
 
 })
 
 socket.on('startGame', function (data) {
     gamedata = data;
-    console.log(data)
+    // console.log(data)
     startGame()
 })
 
 socket.on('tokenPlaced', function (data) {
     gamedata = data
-    console.log("TOKENPLACED")
-    console.log(data)
+    // console.log("TOKENPLACED")
+    // console.log(data)
     addStone(data.player, data.pos_x, data.pos_y)
     nextMove()
 })
 
 socket.on('ErrorPlacing', function (data) {
     gamedata = data
-    console.log("ERROR Placing")
+    // console.log("ERROR Placing")
 })
 
 
@@ -360,7 +360,7 @@ socket.on('ErrorMoving', function (data) {
     //         .attr('cx', startposition[0])
     //         .attr('cy', startposition[1]);
     // }
-    console.log("ERROR Moving")
+    // console.log("ERROR Moving")
 })
 
 function moveToken(token, pos_x, pos_y) {
@@ -386,18 +386,18 @@ function removeTokenFromBoard(token, tokenid) {
 
 socket.on('tokenRemoved', function (data) {
     gamedata = data
-    console.log('tokenRemoved')
+    // console.log('tokenRemoved')
     removeStone(data.tokenid)
     nextMove()
 })
 
 
-// console.log(coordinateFactorX, coordinateFactorY)
+// // console.log(coordinateFactorX, coordinateFactorY)
 
 // svg.on('mousemove', function(){
 //     let mouse = d3.mouse(this);
 //     let elem = document.elementFromPoint((mouse[0])*coordinateFactorX, (mouse[1])*coordinateFactorY);
-//     console.log(elem.id, "mouse", mouse)
+//     // console.log(elem.id, "mouse", mouse)
 // })
 
 // let players = {player1: [], player2: []}
