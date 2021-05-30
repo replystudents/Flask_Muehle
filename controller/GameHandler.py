@@ -50,7 +50,7 @@ class GameHandler:
 			return self.gameQueue.get(gameId)
 		if self.activeGames.get(gameId):
 			return self.activeGames.get(gameId)
-		return Exception('Game not found')
+		raise Exception('Game not found')
 
 	def saveGameInDB(self, gameId):
 		game = self.getGame(gameId)
