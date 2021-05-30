@@ -19,21 +19,11 @@ window.addEventListener('resize', () => {
     setFactorOffset()
 })
 
-// console.log(coordinateFactorX, coordinateFactorY)
-
-// svg.on('mousemove', function(){
-//     let mouse = d3.mouse(this);
-//     let elem = document.elementFromPoint((mouse[0])*coordinateFactorX, (mouse[1])*coordinateFactorY);
-//     console.log(elem.id, "mouse", mouse)
-// })
-
-// let players = {player1: [], player2: []}
-// let placingPhase = true;
-// let hasMuehle = true;
 let stones = {'player1': [], 'player2': []}
 
 let iStones = {player1: 0, player2: 0}
 let player;
+let enemyplayer;
 
 svg.on('click', function () {
     if (gamedata.state === 'PLACE_PHASE') {
@@ -53,6 +43,11 @@ svg.on('click', function () {
         //     placingPhase = false;
         // }
     } else if (gamedata.state === 'MILL') {
+        let mouse = d3.mouse(this);
+        let elem = document.elementFromPoint(mouse[0] * coordinateFactorX + coordinateOffsetX, mouse[1] * coordinateFactorY + coordinateOffsetY);
+        if (elem.classList.contains("player") && !elem.classList.contains(player)) {
+            removeTokenFromBoard(elem.id.split('-')[1], elem.id)
+        }
 
         // if (hasMuehle === true) {
         //     let player = 'player1'
@@ -101,9 +96,9 @@ function addStone(playername, pos_x, pos_y) {
 
 }
 
-function removeStone() {
-    current.remove()
-
+function removeStone(tokenid) {
+    console.log('remove:' + tokenid)
+    d3.select('circle#' + tokenid).remove()
 }
 
 let dragHandler = d3.drag()
@@ -111,62 +106,68 @@ let dragHandler = d3.drag()
     .on('start', dragstarted)
     .on('end', dragended);
 
-// let circle = svg.append("circle")
-//     .attr('class', 'player player1 draggable')
-//     .attr("cx", 50)
-//     .attr("cy", 50);
-// let circle2 = svg.append("circle")
-//     .attr('class', 'player player2 draggable')
-//     .attr("cx", 150)
-//     .attr("cy", 150);
-//
-// dragHandler(circle);
-// dragHandler(circle2);
-
 let startposition = [];
 let current;
 
 function dragstarted() {
-    current = d3.select(this);
-    current.raise()
-    startposition[0] = current.attr("cx")
-    startposition[1] = current.attr("cy")
-    //console.log("startposition", startposition)
+    if (gamedata.state === 'PLAYING_PHASE') {
+        current = d3.select(this);
+        current.style('cursor', 'grabbing')
+        current.raise()
+        startposition[0] = current.attr("cx")
+        startposition[1] = current.attr("cy")
+        //console.log("startposition", startposition)
+    }
 }
 
 function dragged() {
-    current = d3.select(this);
-    current
-        .attr('cx', d3.event.x)
-        .attr('cy', d3.event.y);
+    if (gamedata.state === 'PLAYING_PHASE') {
+        current = d3.select(this);
+        current
+            .attr('cx', d3.event.x)
+            .attr('cy', d3.event.y);
+    }
 }
 
 function dragended() {
-    hideStone(true)
-    let mouse = d3.mouse(this);
-    let elem = document.elementFromPoint(mouse[0] * coordinateFactorX + coordinateOffsetX, mouse[1] * coordinateFactorY + coordinateOffsetY);
-    //console.log(elem)
-    //console.log("mouse",mouse)
-    hideStone(false)
+    if (gamedata.state === 'PLAYING_PHASE') {
+        hideStone(true)
+        current.style('cursor', 'grab')
+        let mouse = d3.mouse(this);
+        let elem = document.elementFromPoint(mouse[0] * coordinateFactorX + coordinateOffsetX, mouse[1] * coordinateFactorY + coordinateOffsetY);
+        //console.log(elem)
+        //console.log("mouse",mouse)
+        hideStone(false)
 
 
-    if (elem.classList.contains("dot")) {
-        let pos = elem.id.split('-')
-        moveToken(current.attr('id'), pos[1], pos[2])
+        if (elem.classList.contains("dot")) {
+            let pos = elem.id.split('-')
+            moveToken(current.attr('id'), pos[1], pos[2])
+            current
+                .attr('cx', startposition[0])
+                .attr('cy', startposition[1]);
+            // current
+            //     .attr('cx', Math.round(d3.event.x / 50) * 50)
+            //     .attr('cy', Math.round(d3.event.y / 50) * 50);
+        } else {
+            current
+                .attr('cx', startposition[0])
+                .attr('cy', startposition[1]);
+        }
 
-        current
-            .attr('cx', Math.round(d3.event.x / 50) * 50)
-            .attr('cy', Math.round(d3.event.y / 50) * 50);
-    } else {
-        current
-            .attr('cx', startposition[0])
-            .attr('cy', startposition[1]);
     }
-
 }
 
 function moveStone(playername, tokenid, pos_x, pos_y) {
-
+    let token = d3.select('circle#' + tokenid)
+    let dot = d3.select('circle#pos-' + pos_x + '-' + pos_y)
+    console.log('token')
+    console.log(token)
+    console.log('dot')
+    console.log(dot)
+    token
+        .attr('cx', dot.attr('cx'))
+        .attr('cy', dot.attr('cy'))
 }
 
 function hideStone(hide) {
@@ -189,24 +190,6 @@ function placeStone() {
 
 }
 
-// Get the modal
-//
-// // Get the <span> element that closes the modal
-// var span = document.getElementsByClassName("close")[0];
-//
-//
-// // When the user clicks on <span> (x), close the modal
-// span.onclick = function () {
-//     modal.style.display = "none";
-// }
-//
-// // When the user clicks anywhere outside of the modal, close it
-// // window.onclick = function (event) {
-// //     if (event.target === modal) {
-// //         modal.style.display = "none";
-// //     }
-// // }
-
 function startGame() {
     var modal = document.getElementById("waitingpopup");
     modal.style.display = "none";
@@ -214,10 +197,12 @@ function startGame() {
     let enemyName = document.getElementById('enemyName')
     if (gamedata.player1 === username) {
         player = 'player1'
-        enemyName.innerText = gamedata.player2
+        enemyplayer = 'player2'
+        enemyName.innerText = enemyName.innerText + ' ' + gamedata.player2
     } else {
         player = 'player2'
-        enemyName.innerText = gamedata.player1
+        enemyplayer = 'player1'
+        enemyName.innerText = enemyName.innerText + ' ' + gamedata.player1
     }
 
     nextMove()
@@ -225,6 +210,52 @@ function startGame() {
 
 
 function nextMove() {
+    let dots = d3.selectAll('circle.dot')
+    let ownstones = d3.selectAll('circle.player1')
+    let enemystones = d3.selectAll('circle.player2')
+    if (gamedata.activePlayer === username) {
+        ownstones = d3.selectAll('circle.' + player)
+        enemystones = d3.selectAll('circle.' + enemyplayer)
+        switch (gamedata.state) {
+            case 'PLACE_PHASE':
+                dots.style('cursor', 'pointer')
+                ownstones.style('cursor', 'not-allowed')
+                enemystones.style('cursor', 'not-allowed')
+                break;
+            case 'PLAYING_PHASE':
+                dots.style('cursor', 'not-allowed')
+                ownstones.style('cursor', 'grab')
+                enemystones.style('cursor', 'not-allowed')
+                break;
+            case 'MILL':
+                dots.style('cursor', 'not-allowed')
+                ownstones.style('cursor', 'not-allowed')
+                enemystones.style('cursor', 'pointer')
+                break;
+            case'END':
+                dots.style('cursor', 'default')
+                ownstones.style('cursor', 'default')
+                enemystones.style('cursor', 'default')
+                break;
+            default:
+                break;
+        }
+    } else {
+        dots.style('cursor', 'not-allowed')
+        ownstones.style('cursor', 'not-allowed')
+        enemystones.style('cursor', 'not-allowed')
+    }
+
+    if (gamedata.state === 'END') {
+        window.alert(gamedata.winner + ' hat gewonnen!')
+
+
+        socket.emit('leave', {'room': gameid})
+
+
+    }
+
+
     let enemyName = document.getElementById('enemyName')
     let ownName = document.getElementById('ownName')
     let border = document.getElementById('border')
@@ -237,6 +268,7 @@ function nextMove() {
         ownName.style.color = 'black'
         enemyName.style.color = 'green'
     }
+    console.log('Gamestate: ' + gamedata.state)
 }
 
 
@@ -317,10 +349,17 @@ function placeTokenOnBoard(pos_x, pos_y) {
 }
 
 socket.on('tokenMoved', function (data) {
+    gamedata = data
     moveStone(data.player, data.tokenid, data.pos_x, data.pos_y)
     nextMove()
 })
 socket.on('ErrorMoving', function (data) {
+    // if(gamedata.activePlayer === username) {
+    //
+    //     current
+    //         .attr('cx', startposition[0])
+    //         .attr('cy', startposition[1]);
+    // }
     console.log("ERROR Moving")
 })
 
@@ -336,4 +375,62 @@ function moveToken(token, pos_x, pos_y) {
 }
 
 
+function removeTokenFromBoard(token, tokenid) {
+    socket.emit('removeToken', {
+        'gameid': gameid,
+        'player': player,
+        'token': token,
+        'tokenid': tokenid
+    })
+}
 
+socket.on('tokenRemoved', function (data) {
+    gamedata = data
+    console.log('tokenRemoved')
+    removeStone(data.tokenid)
+    nextMove()
+})
+
+
+// console.log(coordinateFactorX, coordinateFactorY)
+
+// svg.on('mousemove', function(){
+//     let mouse = d3.mouse(this);
+//     let elem = document.elementFromPoint((mouse[0])*coordinateFactorX, (mouse[1])*coordinateFactorY);
+//     console.log(elem.id, "mouse", mouse)
+// })
+
+// let players = {player1: [], player2: []}
+// let placingPhase = true;
+// let hasMuehle = true;
+
+// Get the modal
+//
+// // Get the <span> element that closes the modal
+// var span = document.getElementsByClassName("close")[0];
+//
+//
+// // When the user clicks on <span> (x), close the modal
+// span.onclick = function () {
+//     modal.style.display = "none";
+// }
+//
+// // When the user clicks anywhere outside of the modal, close it
+// // window.onclick = function (event) {
+// //     if (event.target === modal) {
+// //         modal.style.display = "none";
+// //     }
+// // }
+
+
+// let circle = svg.append("circle")
+//     .attr('class', 'player player1 draggable')
+//     .attr("cx", 50)
+//     .attr("cy", 50);
+// let circle2 = svg.append("circle")
+//     .attr('class', 'player player2 draggable')
+//     .attr("cx", 150)
+//     .attr("cy", 150);
+//
+// dragHandler(circle);
+// dragHandler(circle2);

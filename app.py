@@ -5,7 +5,8 @@ from controller.GameHandler import GameHandler
 
 app = Flask(__name__)
 app.secret_key = "secret_key_for_the_sessions"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/muehle_db.sqlite'  # might be different in windows
+app.config[
+    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:\\dbtest\\foo.db'  # 'sqlite:////tmp/muehle_db.sqlite'  # might be different in windows
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -68,7 +69,7 @@ def game_page(gameid=None):
         if type(game) == type(Exception()):
             if game.args[0] == 'Game not found':
                 return redirect('/game/')
-        if game.player1 != user:
+        if game.player1.id != user.id:
             print('REGISTERING PLAYER')
             game.registerPlayer(user)
             # gameHandler.startGame(gameid)
@@ -97,7 +98,7 @@ def history_page():
 
 @socketio.on('connected')
 def handle_my_custom_event(json):
-    emit('game', str(getUser().userName))
+    emit('game', str(getUser().username))
 
 
 # @socketio.on('validate move')
@@ -110,7 +111,7 @@ def handle_my_custom_event(json):
 @socketio.on('join')
 def on_join(data):
     print(data)
-    username = getUser().userName  # data['username']
+    username = getUser().username  # data['username']
     room = data['gameid']
     join_room(room)
 
@@ -132,12 +133,14 @@ def on_join(data):
 def on_placeToken(data):
     gamesession = gameHandler.getGame(data['gameid'])
     res = ''
-    if gamesession.player1.user == getUser():
+    if gamesession.player1.user.id == getUser().id:
         res = gamesession.placeTokenOnBoard(gamesession.player1.startTokenList[0], int(data["pos_x"]),
                                             int(data["pos_y"]))
     else:
         res = gamesession.placeTokenOnBoard(gamesession.player2.startTokenList[0], int(data["pos_x"]),
                                             int(data["pos_y"]))
+
+    gamesession.printBoard()
     if res == None:
         print('nextMove')
         object = buildGameObject(gamesession)
@@ -155,7 +158,7 @@ def on_moveToken(data):
     print("moveToken")
     gamesession = gameHandler.getGame(data['gameid'])
     res = ''
-    if gamesession.player1.user == getUser():
+    if gamesession.player1.user.id == getUser().id:
         res = gamesession.move(gamesession.player1.tokenList[int(data["token"])], int(data["pos_x"]),
                                int(data["pos_y"]))
     else:
@@ -163,24 +166,52 @@ def on_moveToken(data):
                                int(data["pos_y"]))
     print(res)
     print('moveToken')
-    object = buildGameObject(gamesession)
-    object['player'] = data['player']
-    object['pos_x'] = data['pos_x']
-    object['pos_y'] = data['pos_y']
-    object['tokenid'] = data['tokenid']
-    emit('tokenMoved', object, to=data['gameid'])
+    gamesession.printBoard()
+    if res == None:
+
+        object = buildGameObject(gamesession)
+        object['player'] = data['player']
+        object['pos_x'] = data['pos_x']
+        object['pos_y'] = data['pos_y']
+        object['tokenid'] = data['tokenid']
+        emit('tokenMoved', object, to=data['gameid'])
+    else:
+        print('Error Moving')
+        emit('ErrorMoving', buildGameObject(gamesession), to=data['gameid'])
 
 
-# @socketio.on('leave')
-# def on_leave(data):
-#     username = data['username']
-#     room = data['room']
-#     leave_room(room)
-#     send(username + ' has left the room.', to=room)
+@socketio.on('leave')
+def on_leave(data):
+    username = getUser().username
+    room = data['room']
+    leave_room(room)
+    send(username + ' has left the room.', to=room)
+
+
+@socketio.on('removeToken')
+def on_removeToken(data):
+    print('removeToken')
+    gamesession = gameHandler.getGame(data['gameid'])
+    res = ''
+    if gamesession.player1.user.id == getUser().id:
+        res = gamesession.removeTokenFromBoard(gamesession.player2.tokenList[int(data["token"])])
+    else:
+        res = gamesession.removeTokenFromBoard(gamesession.player1.tokenList[int(data["token"])])
+
+    gamesession.printBoard()
+    if res == None:
+        object = buildGameObject(gamesession)
+        object['player'] = data['player']
+        object['tokenid'] = data['tokenid']
+        emit('tokenRemoved', object, to=data['gameid'])
+    else:
+        print('ERROR REMOVING')
+        emit('ErrorRemoving', buildGameObject(gamesession), to=data['gameid'])
+
 
 def buildGameObject(gamedata):
-    return {'activePlayer': gamedata.activePlayer.user.userName,
-            'player1': gamedata.player1.user.userName, 'player2': gamedata.player2.user.userName,
+    return {'activePlayer': gamedata.activePlayer.user.username,
+            'player1': gamedata.player1.user.username, 'player2': gamedata.player2.user.username,
             'state': gamedata.state}
 
 
