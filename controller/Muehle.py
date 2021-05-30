@@ -72,6 +72,11 @@ class Player:
     def getNumberOfTokens(self):
         return len(self.tokenList)
 
+    def getToken(self, number) -> Token:
+        for token in self.tokenList:
+            if token.number == number:
+                return token
+
 
 class Muehle:
 
@@ -131,7 +136,7 @@ class Muehle:
             token = token or move.token
             self.board[x][y] = 'X'
             # Dadurch funktioniert getNumberOfTokens nicht mehr, aber ich habe eine Möglichkeit gebraucht um die tokens auszuwählen.
-            # token.player.tokenList.remove(token)
+            token.player.tokenList.remove(token)
             self.moves.append(move or Move(player=self.activePlayer, token=token, pos_x=x, pos_y=y, delete=True))
             token.setPosition(-1, -1)
         else:
@@ -178,8 +183,6 @@ class Muehle:
                 player.tokenList.remove(token)
                 self.board[token.pos_x][token.pos_y] = 'X'
                 token.setPosition(-1, -1)
-                # if len(self.player1.startTokenList) == number_of_pieces and len(self.player2.startTokenList) == number_of_pieces:
-                #	self.state = states['init']
                 self.state = states['placePhase']
             elif lastMove.delete:
                 self.changePlayer()

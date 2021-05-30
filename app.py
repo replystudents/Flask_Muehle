@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, session, redirect
+from flask import Flask, render_template, request, session, redirect, flash
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
 from controller.DatabaseModels import db, User, Game
-from controller.GameHandler import GameHandler
+from controller.GameHandler import GameHandler, GameQueueObject
+from controller.Muehle import Muehle
 
 app = Flask(__name__)
 app.secret_key = "secret_key_for_the_sessions"
@@ -64,17 +65,21 @@ def game():
 def game_page(gameid=None):
     user = getUser()
     if gameid:
-        game = gameHandler.getGame(gameid)
-        #print(type(game))
-        if type(game) == type(Exception()):
-            if game.args[0] == 'Game not found':
+        game = None
+        try:
+            game = gameHandler.getGame(gameid)
+        except Exception:
+            return redirect('/game/')
+        if isinstance(game, Muehle):  # if it´s an active game
+            if game.player1.user.id == user.id or game.player2.user.id == user.id:
+                return render_template('game.html', user=user, gameid=gameid)
+            else:
                 return redirect('/game/')
-        if game.player1.id != user.id:
-            #print('REGISTERING PLAYER')
+        if isinstance(game, GameQueueObject) and game.player1.id != user.id:  # if it´s a game, which has not started
+            # print('REGISTERING PLAYER')
             game.registerPlayer(user)
             # gameHandler.startGame(gameid)
-            #print("READY TO START GAME")
-        user = getUser()
+            # print("READY TO START GAME")
         return render_template('game.html', user=user, gameid=gameid)
     else:
         return redirect('/game/')
@@ -110,21 +115,27 @@ def handle_my_custom_event(json):
 
 @socketio.on('join')
 def on_join(data):
-    #print(data)
+    # print(data)
     username = getUser().username  # data['username']
     room = data['gameid']
     join_room(room)
+    game = None
+    try:
+        game = gameHandler.getGame(data['gameid'])
+        print('test')
+    except Exception:
+        return redirect('/game/')
 
-    game = gameHandler.getGame(data['gameid'])
-
-    if game.player2:
-        #print('START GAME')
-        #print('player1', game.player1)
-        #print('player2', game.player2)
+    if game.player2 and isinstance(game, GameQueueObject):
+        # print('START GAME')
+        # print('player1', game.player1)
+        # print('player2', game.player2)
         gamesession = gameHandler.startGame(data['gameid'])
 
         emit('startGame', buildGameObject(gamesession),
              to=room)
+    elif isinstance(game, Muehle):
+        emit('startGame', buildGameObject(game), to=room),
     else:
         send('Verbindung zu ' + username + 'aufgebaut.', to=room)
 
@@ -159,10 +170,10 @@ def on_moveToken(data):
     gamesession = gameHandler.getGame(data['gameid'])
     res = ''
     if gamesession.player1.user.id == getUser().id:
-        res = gamesession.move(gamesession.player1.tokenList[int(data["token"])], int(data["pos_x"]),
+        res = gamesession.move(gamesession.player1.getToken(int(data["token"])), int(data["pos_x"]),
                                int(data["pos_y"]))
     else:
-        res = gamesession.move(gamesession.player2.tokenList[int(data["token"])], int(data["pos_x"]),
+        res = gamesession.move(gamesession.player2.getToken(int(data["token"])), int(data["pos_x"]),
                                int(data["pos_y"]))
     #print(res)
     #print('moveToken')
@@ -194,9 +205,9 @@ def on_removeToken(data):
     gamesession = gameHandler.getGame(data['gameid'])
     res = ''
     if gamesession.player1.user.id == getUser().id:
-        res = gamesession.removeTokenFromBoard(gamesession.player2.tokenList[int(data["token"])])
+        res = gamesession.removeTokenFromBoard(gamesession.player2.getToken(int(data["token"])))
     else:
-        res = gamesession.removeTokenFromBoard(gamesession.player1.tokenList[int(data["token"])])
+        res = gamesession.removeTokenFromBoard(gamesession.player1.getToken(int(data["token"])))
 
     gamesession.printBoard()
     if res == None:
