@@ -1,4 +1,5 @@
 from collections import deque
+from copy import deepcopy
 
 board = [
     ['X', ' ', ' ', 'X', ' ', ' ', 'X'],
@@ -87,7 +88,7 @@ class Muehle:
         self.activePlayer = self.player1
         self.winner = None
 
-        self.board = board.copy()
+        self.board = deepcopy(board)
         self.state = states['init']
         self.moves = []
         self.positions = [board.copy()]  # stored in a minified version
@@ -318,25 +319,34 @@ class Muehle:
                     possibleMoves.append(Move(player=self.activePlayer, token=token, delete=True))
         elif self.state == states['playingPhase']:
             tokens_of_player = self.activePlayer.tokenList
-            for token in tokens_of_player:
-                x = token.pos_x
-                y = token.pos_y
-                leftFieldX, leftFieldY = self.getLeftField(x, y)
-                rightFieldX, rightFieldY = self.getRightField(x, y)
-                topFieldX, topFieldY = self.getTopField(x, y)
-                bottomFieldX, bottomFieldY = self.getBottomField(x, y)
-                if leftFieldX != -1 and leftFieldY != -1 and board[leftFieldX][leftFieldY] == 'X':
-                    possibleMoves.append(
-                        Move(player=self.activePlayer, token=token, pos_x=leftFieldX, pos_y=leftFieldY))
-                if rightFieldX != -1 and rightFieldY != -1 and board[rightFieldX][rightFieldY] == 'X':
-                    possibleMoves.append(
-                        Move(player=self.activePlayer, token=token, pos_x=rightFieldX, pos_y=rightFieldY))
-                if topFieldX != -1 and topFieldY != -1 and board[topFieldX][topFieldY] == 'X':
-                    possibleMoves.append(
-                        Move(player=self.activePlayer, token=token, pos_x=topFieldX, pos_y=topFieldY))
-                if bottomFieldX != -1 and bottomFieldY != -1 and board[bottomFieldX][bottomFieldY] == 'X':
-                    possibleMoves.append(
-                        Move(player=self.activePlayer, token=token, pos_x=bottomFieldX, pos_y=bottomFieldY))
+            if len(tokens_of_player) == 3:  # Player can move where ever he wants, when he has only 3 pieces
+                for token in tokens_of_player:
+                    for i in range(len(self.board)):
+                        for j in range(len(self.board[i])):
+                            if self.board[i][j] == 'X':
+                                possibleMoves.append(
+                                    Move(player=self.activePlayer, token=token, pos_x=i,
+                                         pos_y=j))
+            else:
+                for token in tokens_of_player:
+                    x = token.pos_x
+                    y = token.pos_y
+                    leftFieldX, leftFieldY = self.getLeftField(x, y)
+                    rightFieldX, rightFieldY = self.getRightField(x, y)
+                    topFieldX, topFieldY = self.getTopField(x, y)
+                    bottomFieldX, bottomFieldY = self.getBottomField(x, y)
+                    if leftFieldX != -1 and leftFieldY != -1 and board[leftFieldX][leftFieldY] == 'X':
+                        possibleMoves.append(
+                            Move(player=self.activePlayer, token=token, pos_x=leftFieldX, pos_y=leftFieldY))
+                    if rightFieldX != -1 and rightFieldY != -1 and board[rightFieldX][rightFieldY] == 'X':
+                        possibleMoves.append(
+                            Move(player=self.activePlayer, token=token, pos_x=rightFieldX, pos_y=rightFieldY))
+                    if topFieldX != -1 and topFieldY != -1 and board[topFieldX][topFieldY] == 'X':
+                        possibleMoves.append(
+                            Move(player=self.activePlayer, token=token, pos_x=topFieldX, pos_y=topFieldY))
+                    if bottomFieldX != -1 and bottomFieldY != -1 and board[bottomFieldX][bottomFieldY] == 'X':
+                        possibleMoves.append(
+                            Move(player=self.activePlayer, token=token, pos_x=bottomFieldX, pos_y=bottomFieldY))
 
         return possibleMoves
 
@@ -397,8 +407,8 @@ class Muehle:
 
     def getMinifiedBoard(self):
         miniBoard = []
-        for x in self.board:
-            for y in self.board[x]:
+        for x in range(len(self.board)):
+            for y in range(len(self.board[x])):
                 if self.board[x][y] != ' ':
                     if self.board[x][y] == 'X':
                         # Empty Field
