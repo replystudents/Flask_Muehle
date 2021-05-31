@@ -7,7 +7,7 @@ from controller.Muehle import Muehle
 app = Flask(__name__)
 app.secret_key = "secret_key_for_the_sessions"
 app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:\\dbtest\\foo.db'  # 'sqlite:////tmp/muehle_db.sqlite'  # might be different in windows
+    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/muehle_db.sqlite'  # 'sqlite:////tmp/muehle_db.sqlite'  # might be different in windows
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)

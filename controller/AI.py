@@ -20,8 +20,6 @@ def min_move(game: Muehle, depth, player):
 		for move in possible_moves:
 			move_rating = 0
 			if game.state == states['placePhase']:
-				x = move.pos_x2
-				y = move.pos_y2
 				game.executeMove(move, tmpMove=True)
 				move_rating, _ = max_move(game, depth - 1, player)
 				game.undoLastMove()
@@ -99,8 +97,7 @@ def rating(game: Muehle, player):
 		diff = len(player.tokenList) - len(game.getOtherPlayer(player).tokenList)
 		value += diff * points_for_token
 
-	# value += len(game.activePlayer.tokenList) * points_for_token
-	# value += len(game.getPossibleMoves()) * points_for_possible_move
+	value += len(game.getPossibleMoves()) * points_for_possible_move
 	if game.state == states['end']:
 		value += 100 if game.winner == player else -100
 	return value
