@@ -1,5 +1,4 @@
-from controller.Muehle import Muehle
-from controller.Muehle import Player
+from controller.Muehle import Muehle, Player, states
 
 points_for_mill = 2
 points_for_token = 10
@@ -7,11 +6,8 @@ points_for_possible_move = .1
 
 
 def getBestMove(game: Muehle, player: Player, depth):
-	pass
-
-
-def miniMax(game: Muehle, depth):
-	pass
+	_, best_move = max_move(game, depth, player)
+	return best_move
 
 
 def min_move(game: Muehle, depth, player):
@@ -23,24 +19,24 @@ def min_move(game: Muehle, depth, player):
 		best_rating = float('inf')
 		for move in possible_moves:
 			move_rating = 0
-			if game.state == 'PLACE_PHASE':
+			if game.state == states['placePhase']:
 				x = move.pos_x2
 				y = move.pos_y2
 				game.executeMove(move, tmpMove=True)
 				move_rating, _ = max_move(game, depth - 1, player)
 				game.undoLastMove()
-			elif game.state == 'PLAYING_PHASE':
+			elif game.state == states['playingPhase']:
 				game.executeMove(move, tmpMove=True)
 				if game.isMill(game.activePlayer, move.token):
 					move_rating = min_move(game, depth, player)
 				else:
 					move_rating, _ = max_move(game, depth - 1, player)
 				game.undoLastMove()
-			elif game.state == 'MILL':
+			elif game.state == states['mill']:
 				game.executeMove(move, tmpMove=True)
 				move_rating, _ = max_move(game, depth - 1, player)
 				game.undoLastMove()
-			elif game.state == 'END':
+			elif game.state == states['end']:
 				move_rating = -100  # player lost
 			best_rating = min(move_rating, best_rating)
 		return best_rating
@@ -48,7 +44,7 @@ def min_move(game: Muehle, depth, player):
 
 def max_move(game: Muehle, depth, player):
 	possible_moves = game.getPossibleMoves()
-	if game.state == 'END':
+	if game.state == states['end']:
 		return (-1, 'Game already finished')
 	elif depth == 0 or len(possible_moves) == 0:
 		return (rating(game, player), '')
@@ -60,22 +56,22 @@ def max_move(game: Muehle, depth, player):
 				print('')
 				pass
 			move_rating = 0
-			if game.state == 'PLACE_PHASE':
+			if game.state == states['placePhase']:
 				game.executeMove(move, tmpMove=True)
 				move_rating = min_move(game, depth - 1, player)
 				game.undoLastMove()
-			elif game.state == 'PLAYING_PHASE':
+			elif game.state == states['playingPhase']:
 				game.executeMove(move, tmpMove=True)
 				if game.isMill(game.activePlayer, move.token):
 					move_rating, _ = max_move(game, depth, player)
 				else:
 					move_rating = min_move(game, depth - 1, player)
 				game.undoLastMove()
-			elif game.state == 'MILL':
+			elif game.state == states['mill']:
 				game.executeMove(move, tmpMove=True)
 				move_rating = min_move(game, depth - 1, player)
 				game.undoLastMove()
-			elif game.state == 'END':
+			elif game.state == states['end']:
 				move_rating = 100  # player wins
 
 			if depth == 3:
@@ -99,13 +95,13 @@ def rating(game: Muehle, player):
 			pass
 			value += points_for_mill
 
-	if game.state == 'PLAYING_PHASE':
+	if game.state == states['playingPhase']:
 		diff = len(player.tokenList) - len(game.getOtherPlayer(player).tokenList)
 		value += diff * points_for_token
 
 	# value += len(game.activePlayer.tokenList) * points_for_token
 	# value += len(game.getPossibleMoves()) * points_for_possible_move
-	if game.state == 'END':
+	if game.state == states['end']:
 		value += 100 if game.winner == player else -100
 	return value
 
