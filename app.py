@@ -138,8 +138,6 @@ def on_join(data):
              to=room)
     elif isinstance(game, Muehle):
         emit('startGame', buildGameObject(game), to=room)
-        # print('getGame')
-        emit('getGame', to=room)
     else:
         send('Verbindung zu ' + username + 'aufgebaut.', to=room)
 

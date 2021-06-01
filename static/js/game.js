@@ -268,6 +268,12 @@ socket.on('username', function (data) {
 socket.on('startGame', function (data) {
     gamedata = data;
     startGame()
+    if (getGame().length !== 0) {
+        socket.emit('syncGame', {
+            'gameid': gameid,
+            'tokenAttributes': getGame()
+        })
+    }
 })
 /**
  * Placing
@@ -338,15 +344,6 @@ socket.on('tokenRemoved', function (data) {
 socket.on('syncGame', function (data) {
     if (getGame().length === 0) {
         setGame(data.tokenAttributes)
-    }
-})
-
-socket.on('getGame', function () {
-    if (getGame().length !== 0) {
-        socket.emit('syncGame', {
-            'gameid': gameid,
-            'tokenAttributes': getGame()
-        })
     }
 })
 
