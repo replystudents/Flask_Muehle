@@ -50,9 +50,6 @@ def max_move(game: Muehle, depth, player):
 		best_rating = float('-inf')
 		best_move = None
 		for move in possible_moves:
-			if move.move == 'P1-mv-P1_8 - (4, 4) -> (4,3)' and depth == 3:
-				print('')
-				pass
 			move_rating = 0
 			if game.state == states['placePhase']:
 				game.executeMove(move, tmpMove=True)
@@ -71,10 +68,6 @@ def max_move(game: Muehle, depth, player):
 				game.undoLastMove()
 			elif game.state == states['end']:
 				move_rating = 100  # player wins
-
-			if depth == 3:
-				pass
-				print(f'Rating von Move: {move.move}: {move_rating}')
 			if move_rating > best_rating:
 				best_rating = move_rating
 				best_move = move

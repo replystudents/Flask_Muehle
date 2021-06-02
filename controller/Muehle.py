@@ -110,7 +110,9 @@ class Muehle:
         if tmpMove is False:
             self.positions.append(self.getMinifiedBoard())
 
-    def placeTokenOnBoard(self, token: Token = None, pos_x=None, pos_y=None, move: Move = None):
+    def placeTokenOnBoard(self, token: Token = None, pos_x=None, pos_y=None, move: Move = None) -> Move:
+        if token and token.player != self.activePlayer:
+            raise Exception(f'It´s not the player´s turn ({token.player.user.username})')
         if self.state == states['placePhase']:
             move = move or Move(self.activePlayer, token, pos_x, pos_y, place=True)
             if move.token in self.activePlayer.startTokenList:
@@ -127,18 +129,20 @@ class Muehle:
                 raise Exception('Token was already placed')
             if len(self.player2.startTokenList) == 0:
                 self.state = states['playingPhase']
+            return move
         else:
             raise Exception('Can not execute placeToken, cause game is not in PLACE_PHASE')
 
-    def removeTokenFromBoard(self, token: Token = None, move: Move = None):
+    def removeTokenFromBoard(self, token: Token = None, move: Move = None) -> Move:
+        x = token.pos_x if token else move.pos_x1
+        y = token.pos_y if token else move.pos_y1
+        move = move or Move(player=self.activePlayer, token=token, pos_x=x, pos_y=y, delete=True)
         if self.state == states['mill']:
-            x = token.pos_x if token else move.pos_x1
-            y = token.pos_y if token else move.pos_y1
             token = token or move.token
             self.board[x][y] = 'X'
             # Dadurch funktioniert getNumberOfTokens nicht mehr, aber ich habe eine Möglichkeit gebraucht um die tokens auszuwählen.
             token.player.tokenList.remove(token)
-            self.moves.append(move or Move(player=self.activePlayer, token=token, pos_x=x, pos_y=y, delete=True))
+            self.moves.append(move)
             token.setPosition(-1, -1)
         else:
             raise Exception('Can not execute remove, cause game is not in MILL_PHASE')
@@ -149,8 +153,11 @@ class Muehle:
         else:
             self.state = states['playingPhase']
         self.changePlayer()
+        return move
 
-    def move(self, token: Token = None, pos_x=None, pos_y=None, move=None):
+    def move(self, token: Token = None, pos_x=None, pos_y=None, move=None) -> Move:
+        if token and token.player != self.activePlayer:
+            raise Exception(f'It´s not the player´s turn ({token.player.user.username})')
         if self.state == states['playingPhase']:
             if move is not None:
                 token = move.token
@@ -168,6 +175,7 @@ class Muehle:
                     self.state = states['mill']
                 else:
                     self.changePlayer()
+                return move
             else:
                 raise Exception('You tried a non valid move')
         else:
@@ -206,7 +214,6 @@ class Muehle:
                 token.setPosition(lastMove.pos_x1, lastMove.pos_y1)
                 self.state = states['playingPhase']
         else:
-            return
             raise Exception('No moves found to undo')
 
     def changePlayer(self) -> Player:
@@ -335,16 +342,16 @@ class Muehle:
                     rightFieldX, rightFieldY = self.getRightField(x, y)
                     topFieldX, topFieldY = self.getTopField(x, y)
                     bottomFieldX, bottomFieldY = self.getBottomField(x, y)
-                    if leftFieldX != -1 and leftFieldY != -1 and board[leftFieldX][leftFieldY] == 'X':
+                    if leftFieldX != -1 and leftFieldY != -1 and self.board[leftFieldX][leftFieldY] == 'X':
                         possibleMoves.append(
                             Move(player=self.activePlayer, token=token, pos_x=leftFieldX, pos_y=leftFieldY))
-                    if rightFieldX != -1 and rightFieldY != -1 and board[rightFieldX][rightFieldY] == 'X':
+                    if rightFieldX != -1 and rightFieldY != -1 and self.board[rightFieldX][rightFieldY] == 'X':
                         possibleMoves.append(
                             Move(player=self.activePlayer, token=token, pos_x=rightFieldX, pos_y=rightFieldY))
-                    if topFieldX != -1 and topFieldY != -1 and board[topFieldX][topFieldY] == 'X':
+                    if topFieldX != -1 and topFieldY != -1 and self.board[topFieldX][topFieldY] == 'X':
                         possibleMoves.append(
                             Move(player=self.activePlayer, token=token, pos_x=topFieldX, pos_y=topFieldY))
-                    if bottomFieldX != -1 and bottomFieldY != -1 and board[bottomFieldX][bottomFieldY] == 'X':
+                    if bottomFieldX != -1 and bottomFieldY != -1 and self.board[bottomFieldX][bottomFieldY] == 'X':
                         possibleMoves.append(
                             Move(player=self.activePlayer, token=token, pos_x=bottomFieldX, pos_y=bottomFieldY))
 

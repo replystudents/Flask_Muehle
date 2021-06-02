@@ -2,6 +2,8 @@ import uuid
 from controller.Muehle import Muehle
 from controller.DatabaseModels import db, Game
 import json
+import random
+from typing import Union
 
 
 class GameQueueObject:
@@ -29,11 +31,15 @@ class GameHandler:
 	def startGame(self, gameId):
 		game = self.gameQueue.get(gameId)
 		if game.player1 and game.player2:
-			game = Muehle(game.player1, game.player2)
+			# random user should start
+			if bool(random.getrandbits(1)):
+				game = Muehle(game.player1, game.player2)
+			else:
+				game = Muehle(game.player2, game.player1)
 			self.activeGames.setdefault(gameId, game)
 			self.gameQueue.pop(gameId)
-			game.player1.user.activeGame = game
-			game.player2.user.activeGame = game
+			game.player1.user.setActiveGame(gameId)
+			game.player2.user.setActiveGame(gameId)
 			return game
 		else:
 			return Exception('Second Player not registered')
@@ -45,7 +51,7 @@ class GameHandler:
 			game.player1.user.gameHistory.append(game)
 			game.player2.user.gameHistory.append(game)
 
-	def getGame(self, gameId) -> GameQueueObject:
+	def getGame(self, gameId) -> Union[GameQueueObject, Muehle]:
 		if self.gameQueue.get(gameId):
 			return self.gameQueue.get(gameId)
 		if self.activeGames.get(gameId):

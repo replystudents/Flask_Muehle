@@ -2,7 +2,9 @@ from flask import Flask, render_template, request, session, redirect, flash
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
 from controller.DatabaseModels import db, User, Game
 from controller.GameHandler import GameHandler, GameQueueObject
-from controller.Muehle import Muehle
+from controller.Muehle import Muehle, Move
+from controller.AI import getBestMove
+import eventlet
 
 app = Flask(__name__)
 app.secret_key = "secret_key_for_the_sessions"
@@ -52,9 +54,9 @@ def contact_page():
 def game():
     user = getUser()
     if request.method == 'POST':
-        # print(request.form['gametype'])
         gameid = gameHandler.queueNewGame(user)
-
+        if request.form['gametype'] == 'bot':
+            gameHandler.getGame(gameid).registerPlayer(User(isBot=True))
         return redirect('/game/' + str(gameid) + '/')
 
     else:
@@ -103,7 +105,6 @@ def history_page():
 
 @socketio.on('connected')
 def on_connected(json):
-    # print('CONNECTED')
     emit('username', str(getUser().username))
 
 
@@ -116,86 +117,73 @@ def on_connected(json):
 
 @socketio.on('join')
 def on_join(data):
-    # print('JOINING -> ' + getUser().username)
-    username = getUser().username  # data['username']
+    username = getUser().username
     room = data['gameid']
     join_room(room)
-    game = None
     try:
         game = gameHandler.getGame(data['gameid'])
-        # print('test')
     except Exception:
         leave_room(room)
         return redirect('/game/')
 
-    if game.player2 and isinstance(game, GameQueueObject):
-        # print('START GAME')
-        # print('player1', game.player1)
-        # print('player2', game.player2)
-        gamesession = gameHandler.startGame(data['gameid'])
-
-        emit('startGame', buildGameObject(gamesession),
+    if isinstance(game, GameQueueObject) and game.player2 and game.player2.isBot:
+        gameSession = gameHandler.startGame(data['gameid'])
+        # if bot is first player, it has to make the first move
+        emit('startGame', buildGameObject(gameSession),
              to=room)
+        if gameSession.activePlayer.user.isBot:
+            executeBotMove(gameSession, data['gameid'])
+    # if a second player has joined, the game can be started
+    elif isinstance(game, GameQueueObject) and game.player2:
+        gameSession = gameHandler.startGame(data['gameid'])
+
+        emit('startGame', buildGameObject(gameSession), to=room)
     elif isinstance(game, Muehle):
-        emit('startGame', buildGameObject(game), to=room)
+        emit('startGame', buildGameObject(game), to=room),
     else:
         send('Verbindung zu ' + username + 'aufgebaut.', to=room)
 
 
 @socketio.on('placeTokenOnBoard')
 def on_placeToken(data):
-    gamesession = gameHandler.getGame(data['gameid'])
-    res = ''
-    if gamesession.player1.user.id == getUser().id:
-        res = gamesession.placeTokenOnBoard(gamesession.player1.startTokenList[0], int(data["pos_x"]),
-                                            int(data["pos_y"]))
-    else:
-        res = gamesession.placeTokenOnBoard(gamesession.player2.startTokenList[0], int(data["pos_x"]),
-                                            int(data["pos_y"]))
+    gameSession = gameHandler.getGame(data['gameid'])
+    try:
+        if gameSession.player1.user.id == getUser().id:
+            move = gameSession.placeTokenOnBoard(gameSession.player1.startTokenList[0], int(data["pos_x"]),
+                                                 int(data["pos_y"]))
+        else:
+            move = gameSession.placeTokenOnBoard(gameSession.player2.startTokenList[0], int(data["pos_x"]),
+                                                 int(data["pos_y"]))
+        emit('tokenPlaced', buildGameObject(gameSession, move=move), to=data['gameid'])
 
-    #gamesession.printBoard()
-    if res == None:
-        # print('nextMove')
-        object = buildGameObject(gamesession)
-        object['player'] = data['player']
-        object['pos_x'] = data['pos_x']
-        object['pos_y'] = data['pos_y']
-        emit('tokenPlaced', object, to=data['gameid'])
-    else:
-        # print('Error')
-        emit('ErrorPlacing', buildGameObject(gamesession), to=data['gameid'])
+        # if bot has to make a move
+        if gameSession.activePlayer.user.isBot:
+            executeBotMove(gameSession, data['gameid'])
+    except Exception as err:
+        emit('ErrorPlacing', buildGameObject(gameSession, error=err), to=data['gameid'])
 
 
 @socketio.on('moveToken')
 def on_moveToken(data):
-    # print("moveToken")
-    gamesession = gameHandler.getGame(data['gameid'])
-    res = ''
-    if gamesession.player1.user.id == getUser().id:
-        res = gamesession.move(gamesession.player1.getToken(int(data["token"])), int(data["pos_x"]),
-                               int(data["pos_y"]))
-    else:
-        res = gamesession.move(gamesession.player2.getToken(int(data["token"])), int(data["pos_x"]),
-                               int(data["pos_y"]))
-    # print(res)
-    # print('moveToken')
-    #gamesession.printBoard()
-    if res == None:
+    gameSession = gameHandler.getGame(data['gameid'])
+    try:
+        if gameSession.player1.user.id == getUser().id:
+            move = gameSession.move(gameSession.player1.getToken(int(data["token"])), int(data["pos_x"]),
+                                    int(data["pos_y"]))
+        else:
+            move = gameSession.move(gameSession.player2.getToken(int(data["token"])), int(data["pos_x"]),
+                                    int(data["pos_y"]))
 
-        object = buildGameObject(gamesession)
-        object['player'] = data['player']
-        object['pos_x'] = data['pos_x']
-        object['pos_y'] = data['pos_y']
-        object['tokenid'] = data['tokenid']
-        emit('tokenMoved', object, to=data['gameid'])
-    else:
-        # print('Error Moving')
-        emit('ErrorMoving', buildGameObject(gamesession), to=data['gameid'])
+        emit('tokenMoved', buildGameObject(gameSession, move), to=data['gameid'])
+
+        while gameSession.activePlayer.user.isBot:
+            executeBotMove(gameSession, data['gameid'])
+    except Exception as err:
+        emit('ErrorMoving', buildGameObject(gameSession, error=err), to=data['gameid'])
 
 
 @socketio.on('leave')
 def on_leave(data):
-    # print('LEAVING -> ' + getUser().username)
     username = getUser().username
     room = data['room']
     leave_room(room)
@@ -204,23 +192,19 @@ def on_leave(data):
 
 @socketio.on('removeToken')
 def on_removeToken(data):
-    # print('removeToken')
-    gamesession = gameHandler.getGame(data['gameid'])
-    res = ''
-    if gamesession.player1.user.id == getUser().id:
-        res = gamesession.removeTokenFromBoard(gamesession.player2.getToken(int(data["token"])))
-    else:
-        res = gamesession.removeTokenFromBoard(gamesession.player1.getToken(int(data["token"])))
+    gameSession = gameHandler.getGame(data['gameid'])
+    try:
+        if gameSession.player1.user.id == getUser().id:
+            move = gameSession.removeTokenFromBoard(gameSession.player2.getToken(int(data["token"])))
+        else:
+            move = gameSession.removeTokenFromBoard(gameSession.player1.getToken(int(data["token"])))
+        emit('tokenRemoved', buildGameObject(gameSession, move=move), to=data['gameid'])
 
-    #gamesession.printBoard()
-    if res == None:
-        object = buildGameObject(gamesession)
-        object['player'] = data['player']
-        object['tokenid'] = data['tokenid']
-        emit('tokenRemoved', object, to=data['gameid'])
-    else:
-        # print('ERROR REMOVING')
-        emit('ErrorRemoving', buildGameObject(gamesession), to=data['gameid'])
+        while gameSession.activePlayer.user.isBot:
+            executeBotMove(gameSession, data['gameid'])
+
+    except Exception as err:
+        emit('ErrorRemoving', buildGameObject(gameSession, error=err), to=data['gameid'])
 
 
 @socketio.on('syncGame')
@@ -229,10 +213,43 @@ def on_syncGame(data):
     emit('syncGame', data, to=data['gameid'])
 
 
-def buildGameObject(gamedata):
-    return {'activePlayer': gamedata.activePlayer.user.username,
-            'player1': gamedata.player1.user.username, 'player2': gamedata.player2.user.username,
-            'state': gamedata.state}
+def executeBotMove(gameSession, room):
+    eventlet.sleep(0)
+    # causes socket to send last message directly
+    # otherwise the message would be send together with the bot move
+    move = getBestMove(gameSession, gameSession.activePlayer, 3)
+    gameSession.executeMove(move)
+    botMoveObject = buildGameObject(gameSession, move=move)
+    if move.delete:
+        emit('tokenRemoved', botMoveObject, to=room)
+    elif move.place:
+        emit('tokenPlaced', botMoveObject, to=room)
+    else:
+        emit('tokenMoved', botMoveObject, to=room)
+
+
+def buildGameObject(gamedata, move=None, error=None):
+    gameObject = {'activePlayer': gamedata.activePlayer.user.username,
+                  'player1': gamedata.player1.user.username, 'player2': gamedata.player2.user.username,
+                  'state': gamedata.state}
+    if move and isinstance(move, Move):
+        if move.delete:
+            if move.player.playerNumber == 'P1':
+                gameObject['player'] = 'player2'
+            else:
+                gameObject['player'] = 'player1'
+        else:
+            if move.player.playerNumber == 'P1':
+                gameObject['player'] = 'player1'
+            else:
+                gameObject['player'] = 'player2'
+        gameObject['pos_x'] = move.pos_x2
+        gameObject['pos_y'] = move.pos_y2
+        gameObject['tokenid'] = f'{gameObject["player"]}-{move.token.id.split("_")[1]}'
+
+    if error and isinstance(error, Exception):
+        gameObject['error'] = error.args[0]
+    return gameObject
 
 
 if __name__ == '__main__':

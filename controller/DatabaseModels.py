@@ -9,16 +9,24 @@ class User(db.Model):
 	username = db.Column(db.String(100), unique=True, nullable=False)
 	email = db.Column(db.String(120), unique=True)
 	password = db.Column(db.String(100))
+	activeGame = db.Column(db.String(36))
 	isTmpUser = db.Column(db.Boolean, default=False)
+	isBot = db.Column(db.Boolean, default=False)
 
-	def __init__(self, username=username, email=email, password=password, isTmpUser=isTmpUser):
-		if isTmpUser is True:
+	def __init__(self, username=username, email=email, password=password, isTmpUser=isTmpUser, isBot=isBot):
+		if isBot is True:
+			self.username = f'Bot - {self.id}'
+			self.isBot = isBot
+		elif isTmpUser is True:
 			self.username = generate_username(1).pop()
 			self.isTmpUser = True
 		else:
 			self.username = username
 			self.email = email
 			self.password = password
+
+	def setActiveGame(self, gameId):
+		self.activeGame = gameId
 
 
 class Game(db.Model):
