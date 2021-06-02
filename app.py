@@ -104,8 +104,8 @@ def history_page():
 
 
 @socketio.on('connected')
-def handle_my_custom_event(json):
-    emit('game', str(getUser().username))
+def on_connected(json):
+    emit('username', str(getUser().username))
 
 
 # @socketio.on('validate move')
@@ -123,6 +123,7 @@ def on_join(data):
     try:
         game = gameHandler.getGame(data['gameid'])
     except Exception:
+        leave_room(room)
         return redirect('/game/')
 
     if isinstance(game, GameQueueObject) and game.player2 and game.player2.isBot:
@@ -204,6 +205,12 @@ def on_removeToken(data):
 
     except Exception as err:
         emit('ErrorRemoving', buildGameObject(gameSession, error=err), to=data['gameid'])
+
+
+@socketio.on('syncGame')
+def on_syncGame(data):
+    # print('on_syncGame')
+    emit('syncGame', data, to=data['gameid'])
 
 
 def executeBotMove(gameSession, room):
