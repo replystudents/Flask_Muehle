@@ -52,7 +52,7 @@ def contact_page():
 def game():
     user = getUser()
     if request.method == 'POST':
-        #print(request.form['gametype'])
+        # print(request.form['gametype'])
         gameid = gameHandler.queueNewGame(user)
 
         return redirect('/game/' + str(gameid) + '/')
@@ -102,8 +102,9 @@ def history_page():
 
 
 @socketio.on('connected')
-def handle_my_custom_event(json):
-    emit('game', str(getUser().username))
+def on_connected(json):
+    # print('CONNECTED')
+    emit('username', str(getUser().username))
 
 
 # @socketio.on('validate move')
@@ -115,15 +116,16 @@ def handle_my_custom_event(json):
 
 @socketio.on('join')
 def on_join(data):
-    # print(data)
+    # print('JOINING -> ' + getUser().username)
     username = getUser().username  # data['username']
     room = data['gameid']
     join_room(room)
     game = None
     try:
         game = gameHandler.getGame(data['gameid'])
-        print('test')
+        # print('test')
     except Exception:
+        leave_room(room)
         return redirect('/game/')
 
     if game.player2 and isinstance(game, GameQueueObject):
@@ -135,7 +137,7 @@ def on_join(data):
         emit('startGame', buildGameObject(gamesession),
              to=room)
     elif isinstance(game, Muehle):
-        emit('startGame', buildGameObject(game), to=room),
+        emit('startGame', buildGameObject(game), to=room)
     else:
         send('Verbindung zu ' + username + 'aufgebaut.', to=room)
 
@@ -151,22 +153,22 @@ def on_placeToken(data):
         res = gamesession.placeTokenOnBoard(gamesession.player2.startTokenList[0], int(data["pos_x"]),
                                             int(data["pos_y"]))
 
-    gamesession.printBoard()
+    #gamesession.printBoard()
     if res == None:
-        #print('nextMove')
+        # print('nextMove')
         object = buildGameObject(gamesession)
         object['player'] = data['player']
         object['pos_x'] = data['pos_x']
         object['pos_y'] = data['pos_y']
         emit('tokenPlaced', object, to=data['gameid'])
     else:
-        #print('Error')
+        # print('Error')
         emit('ErrorPlacing', buildGameObject(gamesession), to=data['gameid'])
 
 
 @socketio.on('moveToken')
 def on_moveToken(data):
-    #print("moveToken")
+    # print("moveToken")
     gamesession = gameHandler.getGame(data['gameid'])
     res = ''
     if gamesession.player1.user.id == getUser().id:
@@ -175,9 +177,9 @@ def on_moveToken(data):
     else:
         res = gamesession.move(gamesession.player2.getToken(int(data["token"])), int(data["pos_x"]),
                                int(data["pos_y"]))
-    #print(res)
-    #print('moveToken')
-    gamesession.printBoard()
+    # print(res)
+    # print('moveToken')
+    #gamesession.printBoard()
     if res == None:
 
         object = buildGameObject(gamesession)
@@ -187,12 +189,13 @@ def on_moveToken(data):
         object['tokenid'] = data['tokenid']
         emit('tokenMoved', object, to=data['gameid'])
     else:
-        #print('Error Moving')
+        # print('Error Moving')
         emit('ErrorMoving', buildGameObject(gamesession), to=data['gameid'])
 
 
 @socketio.on('leave')
 def on_leave(data):
+    # print('LEAVING -> ' + getUser().username)
     username = getUser().username
     room = data['room']
     leave_room(room)
@@ -201,7 +204,7 @@ def on_leave(data):
 
 @socketio.on('removeToken')
 def on_removeToken(data):
-    #print('removeToken')
+    # print('removeToken')
     gamesession = gameHandler.getGame(data['gameid'])
     res = ''
     if gamesession.player1.user.id == getUser().id:
@@ -209,15 +212,21 @@ def on_removeToken(data):
     else:
         res = gamesession.removeTokenFromBoard(gamesession.player1.getToken(int(data["token"])))
 
-    gamesession.printBoard()
+    #gamesession.printBoard()
     if res == None:
         object = buildGameObject(gamesession)
         object['player'] = data['player']
         object['tokenid'] = data['tokenid']
         emit('tokenRemoved', object, to=data['gameid'])
     else:
-        #print('ERROR REMOVING')
+        # print('ERROR REMOVING')
         emit('ErrorRemoving', buildGameObject(gamesession), to=data['gameid'])
+
+
+@socketio.on('syncGame')
+def on_syncGame(data):
+    # print('on_syncGame')
+    emit('syncGame', data, to=data['gameid'])
 
 
 def buildGameObject(gamedata):
