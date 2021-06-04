@@ -50,6 +50,12 @@ def contact_page():
     return render_template('contact.html', user=user)
 
 
+@app.route('/rules')
+def rules_page():
+    user = getUser()
+    return render_template('rules.html', user=user)
+
+
 @app.route('/game/', methods=['POST', 'GET'])
 def game():
     user = getUser()
