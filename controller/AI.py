@@ -1,4 +1,5 @@
 from controller.Muehle import Muehle, Player, states
+import random
 
 points_for_mill = 2
 points_for_token = 10
@@ -11,7 +12,7 @@ def getBestMove(game: Muehle, player: Player, depth):
 
 
 def min_move(game: Muehle, depth, player):
-	possible_moves = game.getPossibleMoves()
+	possible_moves = game.possibleMoves
 	if depth == 0 or len(possible_moves) == 0:
 		game_rating = rating(game, player)
 		return game_rating
@@ -41,14 +42,14 @@ def min_move(game: Muehle, depth, player):
 
 
 def max_move(game: Muehle, depth, player):
-	possible_moves = game.getPossibleMoves()
+	possible_moves = game.possibleMoves
 	if game.state == states['end']:
 		return (-1, 'Game already finished')
 	elif depth == 0 or len(possible_moves) == 0:
 		return (rating(game, player), '')
 	else:
 		best_rating = float('-inf')
-		best_move = None
+		best_moves = []
 		for move in possible_moves:
 			move_rating = 0
 			if game.state == states['placePhase']:
@@ -68,10 +69,12 @@ def max_move(game: Muehle, depth, player):
 				game.undoLastMove()
 			elif game.state == states['end']:
 				move_rating = 100  # player wins
-			if move_rating > best_rating:
+			if move_rating == best_rating:
+				best_moves.append(move)
+			elif move_rating > best_rating:
 				best_rating = move_rating
-				best_move = move
-		return (best_rating, best_move)
+				best_moves = [move]
+		return (best_rating, random.choice(best_moves))
 
 
 def rating(game: Muehle, player):
@@ -86,13 +89,16 @@ def rating(game: Muehle, player):
 			pass
 			value += points_for_mill
 
-	if game.state == states['playingPhase']:
-		diff = len(player.tokenList) - len(game.getOtherPlayer(player).tokenList)
-		value += diff * points_for_token
+	diff = len(player.tokenList) - len(game.getOtherPlayer(player).tokenList)
+	value += diff * points_for_token
 
 	value += len(game.getPossibleMoves()) * points_for_possible_move
-	if game.state == states['end']:
-		value += 100 if game.winner == player else -100
+	finished, winner = game.isGameFinished()
+	if finished:
+		if winner:
+			value += 100 if winner == player else -100
+		else:  # draw
+			value += 100 if value < 0 else -100  # if own rating is less then rating of opponent, than it´s good to draw
 	return value
 
 

@@ -246,6 +246,8 @@ def buildGameObject(gamedata, move=None, error=None):
         gameObject['pos_x'] = move.pos_x2
         gameObject['pos_y'] = move.pos_y2
         gameObject['tokenid'] = f'{gameObject["player"]}-{move.token.id.split("_")[1]}'
+    if gamedata.winner:
+        gameObject['winner'] = gamedata.winner.user.username
 
     if error and isinstance(error, Exception):
         gameObject['error'] = error.args[0]
