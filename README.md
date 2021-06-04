@@ -17,6 +17,8 @@ pip install eventlet
 - AI Funktion einbringen (lorenz)
 - Spielhistorie anzeigen lassen (lorenz) und dann auch alte Spiele laden (gideon)
 - Startseite zusammenbauen (lorenz)
+- Unendschieden Regeln einbauen (lorenz)
+- Regel Page
 
 
 evtl. 

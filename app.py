@@ -9,7 +9,7 @@ import eventlet
 app = Flask(__name__)
 app.secret_key = "secret_key_for_the_sessions"
 app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/muehle_db.sqlite'  # 'sqlite:////tmp/muehle_db.sqlite'  # might be different in windows
+    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/muehle_db.sqlite'  # mac: 'sqlite:////tmp/muehle_db.sqlite'  # windows: 'sqlite:///C:\\dbtest\\foo.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -246,6 +246,8 @@ def buildGameObject(gamedata, move=None, error=None):
         gameObject['pos_x'] = move.pos_x2
         gameObject['pos_y'] = move.pos_y2
         gameObject['tokenid'] = f'{gameObject["player"]}-{move.token.id.split("_")[1]}'
+    if gamedata.winner:
+        gameObject['winner'] = gamedata.winner.user.username
 
     if error and isinstance(error, Exception):
         gameObject['error'] = error.args[0]

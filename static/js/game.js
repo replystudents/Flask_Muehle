@@ -196,7 +196,11 @@ function nextMove() {
     }
 
     if (gamedata.state === 'END') {
-        window.alert(gamedata.winner + ' hat gewonnen!')
+        if (gamedata.winner) {
+            window.alert(gamedata.winner + ' hat gewonnen!')
+        } else {
+            window.alert('Unendschieden')
+        }
 
 
         socket.emit('leave', {'room': gameid})
