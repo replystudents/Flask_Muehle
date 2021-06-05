@@ -103,7 +103,8 @@ def game_page(gameid=None):
 @app.route('/history')
 def history_page():
     user = getUser()
-    return render_template('history.html', user=user)
+    game_history = gameHandler.getFinishedUserGames(user)
+    return render_template('history.html', user=user, game_history=game_history)
 
 
 # @socketio.on('message')
@@ -170,7 +171,7 @@ def on_placeToken(data):
         emit('tokenPlaced', buildGameObject(gameSession, move=move), to=data['gameid'])
 
         # if bot has to make a move
-        if gameSession.activePlayer.user.isBot:
+        if gameSession.activePlayer.user.isBot and gameSession.state != 'END':
             executeBotMove(gameSession, data['gameid'])
 
         if gameSession.state == 'END':
@@ -192,7 +193,7 @@ def on_moveToken(data):
 
         emit('tokenMoved', buildGameObject(gameSession, move), to=data['gameid'])
 
-        while gameSession.activePlayer.user.isBot:
+        while gameSession.activePlayer.user.isBot and gameSession.state != 'END':
             executeBotMove(gameSession, data['gameid'])
 
         if gameSession.state == 'END':
@@ -220,7 +221,7 @@ def on_removeToken(data):
             move = gameSession.removeTokenFromBoard(gameSession.player1.getToken(int(data["token"])))
         emit('tokenRemoved', buildGameObject(gameSession, move=move), to=data['gameid'])
 
-        while gameSession.activePlayer.user.isBot:
+        while gameSession.activePlayer.user.isBot and gameSession.state != 'END':
             executeBotMove(gameSession, data['gameid'])
         if gameSession.state == 'END':
             gameHandler.saveGameInDB(data['gameid'])
@@ -239,15 +240,19 @@ def executeBotMove(gameSession, room):
     eventlet.sleep(0)
     # causes socket to send last message directly
     # otherwise the message would be send together with the bot move
-    move = getBestMove(gameSession, gameSession.activePlayer, 3)
-    gameSession.executeMove(move)
-    botMoveObject = buildGameObject(gameSession, move=move)
-    if move.delete:
-        emit('tokenRemoved', botMoveObject, to=room)
-    elif move.place:
-        emit('tokenPlaced', botMoveObject, to=room)
+    if len(gameSession.player1.tokenList) == 3 and len(gameSession.player2.tokenList) == 3:
+        move = getBestMove(gameSession, gameSession.activePlayer, 2)
     else:
-        emit('tokenMoved', botMoveObject, to=room)
+        move = getBestMove(gameSession, gameSession.activePlayer, 3)
+    if isinstance(move, Move):
+        gameSession.executeMove(move)
+        botMoveObject = buildGameObject(gameSession, move=move)
+        if move.delete:
+            emit('tokenRemoved', botMoveObject, to=room)
+        elif move.place:
+            emit('tokenPlaced', botMoveObject, to=room)
+        else:
+            emit('tokenMoved', botMoveObject, to=room)
 
 
 def buildGameObject(gamedata, move=None, error=None):

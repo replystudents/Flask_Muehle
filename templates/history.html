@@ -1,4 +1,47 @@
 {% extends "base.html" %}
 {% block main %}
-<h1>Spiel Historie</h1>
+<link rel="stylesheet" href="/static/styles/history.css">
+
+<div class="history_container">
+    {% if game_history is defined and game_history|length > 0 %}
+    <div class="game_history container_item">
+        <h2>Spiel Historie:</h2>
+        <hr>
+        <table>
+            <thead>
+            <th>Spieler</th>
+            <th>Ergebnis</th>
+            <th>Datum</th>
+            </thead>
+            <tbody>
+            {% for game in game_history %}
+            <tr>
+                <td>
+                    <div>
+                        <span>{{game.player1}}</span>
+                        <span>{{game.player2}}</span>
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        <span>{{game.resultP1}}</span>
+                        <span>{{game.resultP2}}</span>
+                    </div>
+                </td>
+
+                <td>
+                    <span>{{game.date}}</span>
+                </td>
+            </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+
+
+    </div>
+    {% else %}
+    <h1 class="no_games_found">Keine Spiele gefunden...</h1>
+    {% endif %}
+</div>
 {% endblock %}
