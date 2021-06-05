@@ -6,25 +6,32 @@
 <div class="main_container">
     <div class="panel1">
         <div class="play_container">
+            <form id="newgameform" action="{{url_for('game')}}" method="post"></form>
             <div class="play_friend container_item">
-                <a href="/game">Gegen Freund <br>spielen</a>
+                <button type="submit" form="newgameform" name="gametype" value="human">
+                    Menschlicher Gegner
+                </button>
             </div>
             <div class="play_bot container_item">
-                <a href="/game">Gegen Bot <br>spielen</a>
+                <button type="submit" form="newgameform" name="gametype" value="bot">
+                    Computer Gegner
+                </button>
             </div>
         </div>
         {% if active_games is defined and active_games|length > 0 %}
         <div class="active_games container_item">
             <h2>Aktive Spiele:</h2>
-            <table>
-                {% for game in active_games %}
-                <tr onclick="window.location='{{game.link}}';">
-                    <td>{{game.player1}}</td>
-                    <td>vs.</td>
-                    <td>{{game.player2}}</td>
-                </tr>
-                {% endfor %}
-            </table>
+            <div>
+                <table>
+                    {% for game in active_games %}
+                    <tr onclick="window.location='{{game.link}}';">
+                        <td>{{game.player1}}</td>
+                        <td>vs.</td>
+                        <td>{{game.player2}}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
 
         </div>
         {% endif %}
