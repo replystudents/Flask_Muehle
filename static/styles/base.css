@@ -63,7 +63,6 @@ For small devices
         width: 100%;
         height: 95vh;
         z-index: 1;
-        animation: open_sidebar 0.4s;
     }
 
     .sidebar_trigger {
@@ -126,14 +125,4 @@ For mobile devices
     .main {
         margin-left: 0px;
     }
-}
-
-@keyframes open_sidebar {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 100;
-    }
-
 }
