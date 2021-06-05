@@ -35,7 +35,9 @@ def getUser():
 @app.route('/')
 def main_page():
     user = getUser()
-    return render_template('index.html', user=user)
+    active_games = gameHandler.getActiveUserGames(user)
+    game_history = gameHandler.getFinishedUserGames(user)
+    return render_template('main.html', user=user, active_games=active_games, game_history=game_history)
 
 
 @app.route('/impressum')
@@ -56,7 +58,12 @@ def game():
     if request.method == 'POST':
         gameid = gameHandler.queueNewGame(user)
         if request.form['gametype'] == 'bot':
-            gameHandler.getGame(gameid).registerPlayer(User(isBot=True))
+            bot = User.query.filter(User.isBot == True).first()
+            if bot is None:
+                bot = User(isBot=True)
+                db.session.add(bot)
+                db.session.commit()
+            gameHandler.getGame(gameid).registerPlayer(bot)
         return redirect('/game/' + str(gameid) + '/')
 
     else:
@@ -159,6 +166,9 @@ def on_placeToken(data):
         # if bot has to make a move
         if gameSession.activePlayer.user.isBot:
             executeBotMove(gameSession, data['gameid'])
+
+        if gameSession.state == 'END':
+            gameHandler.saveGameInDB(data['gameid'])
     except Exception as err:
         emit('ErrorPlacing', buildGameObject(gameSession, error=err), to=data['gameid'])
 
@@ -178,8 +188,12 @@ def on_moveToken(data):
 
         while gameSession.activePlayer.user.isBot:
             executeBotMove(gameSession, data['gameid'])
+
+        if gameSession.state == 'END':
+            gameHandler.saveGameInDB(data['gameid'])
     except Exception as err:
         emit('ErrorMoving', buildGameObject(gameSession, error=err), to=data['gameid'])
+        raise err
 
 
 @socketio.on('leave')
@@ -202,6 +216,8 @@ def on_removeToken(data):
 
         while gameSession.activePlayer.user.isBot:
             executeBotMove(gameSession, data['gameid'])
+        if gameSession.state == 'END':
+            gameHandler.saveGameInDB(data['gameid'])
 
     except Exception as err:
         emit('ErrorRemoving', buildGameObject(gameSession, error=err), to=data['gameid'])

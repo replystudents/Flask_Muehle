@@ -13,8 +13,8 @@ def getBestMove(game: Muehle, player: Player, depth):
 
 def min_move(game: Muehle, depth, player):
 	possible_moves = game.possibleMoves
-	if depth == 0 or len(possible_moves) == 0:
-		game_rating = rating(game, player)
+	if depth == 0 or len(possible_moves) == 0 or game.state == states['end']:
+		game_rating = rating(game, player, depth)
 		return game_rating
 	else:
 		best_rating = float('inf')
@@ -35,18 +35,14 @@ def min_move(game: Muehle, depth, player):
 				game.executeMove(move, tmpMove=True)
 				move_rating, _ = max_move(game, depth - 1, player)
 				game.undoLastMove()
-			elif game.state == states['end']:
-				move_rating = -100  # player lost
 			best_rating = min(move_rating, best_rating)
 		return best_rating
 
 
 def max_move(game: Muehle, depth, player):
 	possible_moves = game.possibleMoves
-	if game.state == states['end']:
-		return (-1, 'Game already finished')
-	elif depth == 0 or len(possible_moves) == 0:
-		return (rating(game, player), '')
+	if depth == 0 or len(possible_moves) == 0 or game.state == states['end']:
+		return (rating(game, player, depth), '')
 	else:
 		best_rating = float('-inf')
 		best_moves = []
@@ -67,8 +63,7 @@ def max_move(game: Muehle, depth, player):
 				game.executeMove(move, tmpMove=True)
 				move_rating = min_move(game, depth - 1, player)
 				game.undoLastMove()
-			elif game.state == states['end']:
-				move_rating = 100  # player wins
+
 			if move_rating == best_rating:
 				best_moves.append(move)
 			elif move_rating > best_rating:
@@ -77,7 +72,7 @@ def max_move(game: Muehle, depth, player):
 		return (best_rating, random.choice(best_moves))
 
 
-def rating(game: Muehle, player):
+def rating(game: Muehle, player, depth):
 	value = 0
 	for token in player.tokenList:
 		if game.isMill(player, token):
@@ -96,9 +91,10 @@ def rating(game: Muehle, player):
 	finished, winner = game.isGameFinished()
 	if finished:
 		if winner:
-			value += 100 if winner == player else -100
+			value += 100 * (1 + depth) if winner == player else -100
 		else:  # draw
-			value += 100 if value < 0 else -100  # if own rating is less then rating of opponent, than it´s good to draw
+			value += 100 * (
+						1 + depth) if value < 0 else -100  # if own rating is less then rating of opponent, than it´s good to draw
 	return value
 
 

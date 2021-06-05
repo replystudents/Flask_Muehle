@@ -1,3 +1,5 @@
+import datetime
+
 from flask_sqlalchemy import SQLAlchemy
 from random_username.generate import generate_username
 
@@ -15,7 +17,7 @@ class User(db.Model):
 
 	def __init__(self, username=username, email=email, password=password, isTmpUser=isTmpUser, isBot=isBot):
 		if isBot is True:
-			self.username = f'Bot - {self.id}'
+			self.username = 'Bot'
 			self.isBot = isBot
 		elif isTmpUser is True:
 			self.username = generate_username(1).pop()
@@ -34,13 +36,15 @@ class Game(db.Model):
 	playerId1 = db.Column(db.String(100))
 	playerId2 = db.Column(db.String(100))
 	winner = db.Column(db.String)
+	date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 	positions = db.Column(db.JSON)
 
-	def __init__(self, player1, player2, winner, game):
+	def __init__(self, gameId, player1, player2, winner, positions):
+		self.gameId = gameId
 		self.playerId1 = player1
 		self.playerId2 = player2
 		self.winner = winner
-		self.game = game
+		self.positions = positions
 
 
 def deleteTmpUsers():
