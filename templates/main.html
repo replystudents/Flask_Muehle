@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block main %}
+
+<link rel="stylesheet" href="/static/styles/main.css">
+
+<div class="main_container">
+    <div class="panel1">
+        <div class="play_container">
+            <div class="play_friend container_item">
+                <a href="/game">Gegen Freund <br>spielen</a>
+            </div>
+            <div class="play_bot container_item">
+                <a href="/game">Gegen Bot <br>spielen</a>
+            </div>
+        </div>
+        {% if active_games is defined and active_games|length > 0 %}
+        <div class="active_games container_item">
+            <h2>Aktive Spiele:</h2>
+            <table>
+                {% for game in active_games %}
+                <tr onclick="window.location='{{game.link}}';">
+                    <td>{{game.player1}}</td>
+                    <td>vs.</td>
+                    <td>{{game.player2}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+
+        </div>
+        {% endif %}
+
+        {% if game_history is defined and game_history|length > 0 %}
+        <div class="game_history container_item">
+            <h2>Spiel Historie:</h2>
+            <hr>
+            <table>
+                <thead>
+                <th>Spieler</th>
+                <th>Ergebnis</th>
+                <th>Datum</th>
+                </thead>
+                <tbody>
+                {% for game in game_history %}
+                <tr>
+                    <td>
+                        <div>
+                            <span>{{game.player1}}</span>
+                            <span>{{game.player2}}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <span>{{game.resultP1}}</span>
+                            <span>{{game.resultP2}}</span>
+                        </div>
+                    </td>
+
+                    <td>
+                        <span>{{game.date}}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+
+
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="panel2">
+        <div class="leaderboard container_item">
+            <h2>Bestenliste:</h2>
+            <hr>
+        </div>
+
+        <div class="statistics container_item">
+            <h2>Statistik:</h2>
+        </div>
+    </div>
+</div>
+{% endblock %}
