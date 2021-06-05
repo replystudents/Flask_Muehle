@@ -40,18 +40,6 @@ def main_page():
     return render_template('main.html', user=user, active_games=active_games, game_history=game_history)
 
 
-@app.route('/impressum')
-def impressum_page():
-    user = getUser()
-    return render_template('impressum.html', user=user)
-
-
-@app.route('/contact')
-def contact_page():
-    user = getUser()
-    return render_template('contact.html', user=user)
-
-
 @app.route('/rules')
 def rules_page():
     user = getUser()

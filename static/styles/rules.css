@@ -1,0 +1,7 @@
+
+.rules_container {
+    width: 100%;
+    background: var(--surface-color);
+    color: var(--font-color);
+    padding: 20px;
+}
