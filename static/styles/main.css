@@ -13,8 +13,6 @@ h2 {
     color: var(--font-color);
 }
 
-.panel1 {
-}
 
 .play_container {
     display: flex;
@@ -76,19 +74,6 @@ h2 {
     border: none;
     width: 100%;
     height: 100%;
-}
-
-.leaderboard {
-    margin: 20px;
-    height: calc(70% - 40px);
-    width: calc(100% - 30px);
-    margin-left: 10px;
-}
-
-.leaderboard hr {
-    color: var(--primary-color);
-    width: 90%;
-    margin: auto;
 }
 
 .active_games {
@@ -194,9 +179,55 @@ h2 {
     margin-left: 10px;
 }
 
+.leaderboard {
+    margin: 20px;
+    height: calc(70% - 40px);
+    width: calc(100% - 30px);
+    margin-left: 10px;
+}
+
+.leaderboard hr {
+    color: var(--primary-color);
+    width: 90%;
+    margin: auto;
+}
+
+.leaderboard table {
+    margin: 5%;
+    overflow: auto;
+}
+
+.leaderboard table tr {
+    margin: 5px;
+}
+
+.leaderboard table tr td {
+    padding: 5px;
+}
+
+#piechart {
+    width: 100%;
+    height: 100%;
+    margin-top: -15%;
+}
+
 @media only screen and (max-width: 1050px) {
 
     .main_container {
         display: block;
+    }
+
+    .leaderboard {
+        margin: 20px;
+        width: calc(100% - 40px);
+    }
+
+    .statistics {
+        margin: 20px;
+        width: calc(100% - 40px);
+    }
+
+    #piechart {
+        margin-top: 0;
     }
 }

@@ -22,6 +22,7 @@ window.addEventListener('scroll', () => {
 })
 
 window.addEventListener('load', () => {
+    setFactorOffset()
 })
 
 window.addEventListener('beforeunload', () => {

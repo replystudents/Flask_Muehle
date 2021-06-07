@@ -55,6 +55,10 @@
     font-size: 20px;
 }
 
+#sidebar_rules_icon {
+    filter: invert(0.9);
+}
+
 
 /**
 For small devices
@@ -102,7 +106,7 @@ For mobile devices
     .sidebar {
         display: none;
         width: 100%;
-        height: 85vh;
+        height: 95vh;
         z-index: 1;
         animation: open_sidebar 0.4s;
         font-size: 6em;
@@ -126,6 +130,11 @@ For mobile devices
 
     .sidebar_trigger:hover ~ #main_block, .sidebar:hover ~ #main_block {
         display: none;
+    }
+
+    .sidebar_list_icon {
+        width: 90px;
+        font-size: 85px;
     }
 
     .main {
