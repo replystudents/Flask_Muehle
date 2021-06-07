@@ -8,6 +8,9 @@
     google.charts.load('current', {'packages': ['corechart']});
     google.charts.setOnLoadCallback(drawChart);
 
+    window.addEventListener('resize', () => {
+        drawChart()
+    })
 
     function drawChart() {
 
@@ -73,37 +76,38 @@
         <div class="game_history container_item">
             <h2>Spiel Historie:</h2>
             <hr>
-            <table>
-                <thead>
-                <th>Spieler</th>
-                <th>Ergebnis</th>
-                <th>Datum</th>
-                </thead>
-                <tbody>
-                {% for game in game_history %}
-                <tr>
-                    <td>
-                        <div>
-                            <span>{{game.player1}}</span>
-                            <span>{{game.player2}}</span>
-                        </div>
-                    </td>
-                    <td>
-                        <div>
-                            <span>{{game.resultP1}}</span>
-                            <span>{{game.resultP2}}</span>
-                        </div>
-                    </td>
+            <div>
+                <table>
+                    <thead>
+                    <th>Spieler</th>
+                    <th>Ergebnis</th>
+                    <th>Datum</th>
+                    </thead>
+                    <tbody>
+                    {% for game in game_history %}
+                    <tr>
+                        <td>
+                            <div>
+                                <span>{{game.player1}}</span>
+                                <span>{{game.player2}}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <span>{{game.resultP1}}</span>
+                                <span>{{game.resultP2}}</span>
+                            </div>
+                        </td>
 
-                    <td>
-                        <span>{{game.date}}</span>
-                    </td>
-                </tr>
-                {% endfor %}
+                        <td>
+                            <span>{{game.date}}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
 
-                </tbody>
-            </table>
-
+                    </tbody>
+                </table>
+            </div>
 
         </div>
         {% endif %}
@@ -114,14 +118,16 @@
         <div class="leaderboard container_item">
             <h2>Bestenliste:</h2>
             <hr>
-            <table>
-                {% for user in leaderboard %}
-                <tr>
-                    <td>{{loop.index}}.</td>
-                    <td>{{user.0}}</td>
-                </tr>
-                {% endfor %}
-            </table>
+            <div>
+                <table>
+                    {% for user in leaderboard %}
+                    <tr>
+                        <td>{{loop.index}}.</td>
+                        <td>{{user.0}}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
         </div>
         {% endif %}
         {% if statistics is defined %}
