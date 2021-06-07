@@ -221,6 +221,12 @@ function nextMove() {
 
     if (gamedata.state === 'END') {
 
+
+        let tieBtn = document.getElementById('tieBtn');
+        let surrenderBtn = document.getElementById('surrenderBtn');
+        tieBtn.disabled = true;
+        surrenderBtn.disabled = true;
+
         let endpopuptext = document.getElementById('endpopuptext')
         if (gamedata.winner) {
             gamephase.innerHTML = 'Das Spiel ist beendet.' + '<br>' + gamedata.winner + ' hat gewonnen!'
@@ -451,13 +457,13 @@ function closePopup() {
 
 
 function tie() {
-    let tieBtn = document.getElementById('tieBtn');
     if (gamedata) {
+        let tieBtn = document.getElementById('tieBtn');
         socket.emit('tieGame', {
             'gameid': gameid
         })
+        tieBtn.disabled = true;
     }
-    tieBtn.disabled = true;
 }
 
 socket.on('wantsToTie', function () {
@@ -468,20 +474,23 @@ socket.on('wantsToTie', function () {
 let surrenderCounter = 0;
 
 function surrender() {
-    let surrenderBtn = document.getElementById('surrenderBtn');
-    if (surrenderCounter === 0) {
-        surrenderBtn.classList.add('btn-outline-warning')
-        surrenderCounter++;
-    } else if (surrenderCounter === 1) {
-        surrenderBtn.classList.add('btn-outline-danger')
-        surrenderCounter++;
+    if (gamedata) {
+        let surrenderBtn = document.getElementById('surrenderBtn');
+        if (surrenderCounter === 0) {
+            surrenderBtn.classList.add('btn-outline-warning')
+            surrenderCounter++;
+        } else if (surrenderCounter === 1) {
+            surrenderBtn.classList.add('btn-outline-danger')
+            surrenderCounter++;
 
-    } else {
-        if (gamedata) {
-            socket.emit('surrenderGame', {
-                'gameid': gameid,
-                'winner': gamedata[enemyplayer]
-            })
+        } else {
+            if (gamedata) {
+                socket.emit('surrenderGame', {
+                    'gameid': gameid,
+                    'winner': gamedata[enemyplayer]
+                })
+                surrenderBtn.disabled = true;
+            }
         }
     }
 }
