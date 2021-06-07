@@ -87,8 +87,8 @@ class GameHandler:
 				games.append({
 					"player1": player1.username,
 					"player2": player2.username,
-					"resultP1": "1" if game.winner and game.winner == player1.id else "0",
-					"resultP2": "1" if game.winner and game.winner == player2.id else "0",
+					"resultP1": "1" if (game.winner and int(game.winner) == player1.id) else "0",
+					"resultP2": "1" if (game.winner and int(game.winner) == player2.id) else "0",
 					"date": f'{game.date.day}.{game.date.month}.{game.date.year}'
 
 				})

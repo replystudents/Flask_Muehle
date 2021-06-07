@@ -50,6 +50,12 @@
     margin: 5px 10px;
 }
 
+.sidebar_list_icon {
+    width: 25px;
+    font-size: 20px;
+}
+
+
 /**
 For small devices
 */

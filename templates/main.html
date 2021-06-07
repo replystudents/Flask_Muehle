@@ -8,14 +8,18 @@
         <div class="play_container">
             <form id="newgameform" action="{{url_for('game')}}" method="post"></form>
             <div class="play_friend container_item">
-                <button type="submit" form="newgameform" name="gametype" value="human">
+                <button class="play_button" type="submit" form="newgameform" name="gametype" value="human">
+                    <i class="fas fa-user"></i>
                     Menschlicher Gegner
                 </button>
+
             </div>
             <div class="play_bot container_item">
-                <button type="submit" form="newgameform" name="gametype" value="bot">
+                <button class="play_button" type="submit" form="newgameform" name="gametype" value="bot">
+                    <i class="fas fa-robot"></i>
                     Computer Gegner
                 </button>
+
             </div>
         </div>
         {% if active_games is defined and active_games|length > 0 %}
