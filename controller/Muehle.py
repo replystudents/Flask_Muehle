@@ -133,6 +133,7 @@ class Muehle:
 				self.state = states['playingPhase']
 			self.possibleMoves = self.getPossibleMoves()
 			if tmpMove is False:
+				self.positions.append(self.getMinifiedBoard())
 				finished, winner = self.isGameFinished()
 				if finished is True:
 					self.state = states['end']
@@ -160,6 +161,7 @@ class Muehle:
 		self.possibleMoves = self.getPossibleMoves()
 		self.movesWithoutMill = 0
 		if tmpMove is False:
+			self.positions.append(self.getMinifiedBoard())
 			finished, winner = self.isGameFinished()
 		if finished:
 			self.state = states['end']
@@ -188,6 +190,7 @@ class Muehle:
 					self.changePlayer()
 				self.possibleMoves = self.getPossibleMoves()
 				if tmpMove is False:
+					self.positions.append(self.getMinifiedBoard())
 					finished, winner = self.isGameFinished()
 					if finished:
 						self.state = states['end']

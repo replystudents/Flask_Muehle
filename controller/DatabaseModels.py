@@ -52,3 +52,23 @@ def deleteTmpUsers():
 	db.session.delete(tmpUsers)
 	db.commit()
 	pass
+
+
+def getLeaderboard():
+	leaderboardQuery = User.query.join(Game, (Game.playerId1 == User.id) | (Game.playerId2 == User.id)).add_columns(
+		Game.winner).all()
+	leaderboardUsers = {}
+	for item in leaderboardQuery:
+		if leaderboardUsers.get(item[0].username):
+			update = {item[0].username: leaderboardUsers.get(item[0].username) + 1}
+			leaderboardUsers.update(update)
+		else:
+			leaderboardUsers.setdefault(item[0].username, 1)
+
+	leaderboard = []
+	for key, value in leaderboardUsers.items():
+		leaderboard.append((key, value))
+
+	leaderboard.sort(key=lambda item: item[1], reverse=True)
+
+	return leaderboard

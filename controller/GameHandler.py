@@ -61,7 +61,8 @@ class GameHandler:
 	def saveGameInDB(self, gameId):
 		game = self.getGame(gameId)
 		positions = game.positions
-		dbGame = Game(gameId, game.player1.user.id, game.player2.user.id, game.winner.user.id, json.dumps(positions))
+		dbGame = Game(gameId, game.player1.user.id, game.player2.user.id, game.winner.user.id if game.winner else None,
+		              json.dumps(positions))
 		db.session.add(dbGame)
 		db.session.commit()
 		self.deleteGame(gameId)
@@ -93,3 +94,19 @@ class GameHandler:
 
 				})
 		return games
+
+	def getUserStatistics(self, user):
+		draw = 0
+		win = 0
+		lose = 0
+		userGames = self.getFinishedUserGames(user)
+		for game in userGames:
+			if game['resultP1'] == game['resultP2']:
+				draw += 1
+			elif game['resultP1'] == '1' and game['player1'] == user.username:
+				win += 1
+			elif game['resultP2'] == '1' and game['player2'] == user.username:
+				win += 1
+			else:
+				lose += 1
+		return (win, lose, draw)

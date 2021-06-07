@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, session, redirect, flash
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
-from controller.DatabaseModels import db, User, Game
+from controller.DatabaseModels import db, User, Game, getLeaderboard
 from controller.GameHandler import GameHandler, GameQueueObject
 from controller.Muehle import Muehle, Move
 from controller.AI import getBestMove
@@ -9,7 +9,7 @@ import eventlet
 app = Flask(__name__)
 app.secret_key = "secret_key_for_the_sessions"
 app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:\\dbtest\\foo.db'  # mac: 'sqlite:////tmp/muehle_db.sqlite'  # windows: 'sqlite:///C:\\dbtest\\foo.db'
+    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/muehle_db.sqlite'  # mac: 'sqlite:////tmp/muehle_db.sqlite'  # windows: 'sqlite:///C:\\dbtest\\foo.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -37,7 +37,10 @@ def main_page():
     user = getUser()
     active_games = gameHandler.getActiveUserGames(user)
     game_history = gameHandler.getFinishedUserGames(user)
-    return render_template('main.html', user=user, active_games=active_games, game_history=game_history)
+    leaderboard = getLeaderboard()
+    statistics = gameHandler.getUserStatistics(user)
+    return render_template('main.html', user=user, active_games=active_games, game_history=game_history,
+                           leaderboard=leaderboard, statistics=statistics)
 
 
 @app.route('/rules')
@@ -188,7 +191,6 @@ def on_moveToken(data):
             gameHandler.saveGameInDB(data['gameid'])
     except Exception as err:
         emit('ErrorMoving', buildGameObject(gameSession, error=err), to=data['gameid'])
-        raise err
 
 
 @socketio.on('leave')
@@ -220,7 +222,6 @@ def on_removeToken(data):
 
 @socketio.on('syncGame')
 def on_syncGame(data):
-    # print('on_syncGame')
     emit('syncGame', data, to=data['gameid'])
 
 
