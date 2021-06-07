@@ -32,18 +32,20 @@ let player;
 let enemyplayer;
 
 svg.on('click', function () {
-    if (gamedata.state === 'PLACE_PHASE') {
-        let mouse = d3.mouse(this);
-        let elem = document.elementFromPoint(mouse[0] * coordinateFactorX + coordinateOffsetX, mouse[1] * coordinateFactorY + coordinateOffsetY);
-        if (elem.classList.contains("dot")) {
-            let pos = elem.id.split('-')
-            placeTokenOnBoard(pos[1], pos[2])
-        }
-    } else if (gamedata.state === 'MILL') {
-        let mouse = d3.mouse(this);
-        let elem = document.elementFromPoint(mouse[0] * coordinateFactorX + coordinateOffsetX, mouse[1] * coordinateFactorY + coordinateOffsetY);
-        if (elem.classList.contains("player") && !elem.classList.contains(player)) {
-            removeTokenFromBoard(elem.id.split('-')[1], elem.id)
+    if (gamedata) {
+        if (gamedata.state === 'PLACE_PHASE') {
+            let mouse = d3.mouse(this);
+            let elem = document.elementFromPoint(mouse[0] * coordinateFactorX + coordinateOffsetX, mouse[1] * coordinateFactorY + coordinateOffsetY);
+            if (elem.classList.contains("dot")) {
+                let pos = elem.id.split('-')
+                placeTokenOnBoard(pos[1], pos[2])
+            }
+        } else if (gamedata.state === 'MILL') {
+            let mouse = d3.mouse(this);
+            let elem = document.elementFromPoint(mouse[0] * coordinateFactorX + coordinateOffsetX, mouse[1] * coordinateFactorY + coordinateOffsetY);
+            if (elem.classList.contains("player") && !elem.classList.contains(player)) {
+                removeTokenFromBoard(elem.id.split('-')[1], elem.id)
+            }
         }
     }
 })
@@ -140,18 +142,18 @@ function hideStone(hide) {
 }
 
 function startGame() {
-    var modal = document.getElementById("waitingpopup");
-    modal.style.display = "none";
+    var waitingpopup = document.getElementById("waitingpopup");
+    waitingpopup.style.display = "none";
 
     let enemyName = document.getElementById('enemyName')
     if (gamedata.player1 === username) {
         player = 'player1'
         enemyplayer = 'player2'
-        enemyName.innerText = enemyName.innerText + ' ' + gamedata.player2
+        enemyName.innerText = gamedata.player2
     } else {
         player = 'player2'
         enemyplayer = 'player1'
-        enemyName.innerText = enemyName.innerText + ' ' + gamedata.player1
+        enemyName.innerText = gamedata.player1
     }
 
     nextMove()
@@ -162,26 +164,31 @@ function nextMove() {
     let dots = d3.selectAll('circle.dot')
     let ownTokens = d3.selectAll('circle.player1')
     let enemyTokens = d3.selectAll('circle.player2')
+    let gamephase = document.getElementById('gamephase')
     if (gamedata.activePlayer === username) {
         ownTokens = d3.selectAll('circle.' + player)
         enemyTokens = d3.selectAll('circle.' + enemyplayer)
         switch (gamedata.state) {
             case 'PLACE_PHASE':
+                gamephase.innerText = 'Platzieren Sie einen Spielstein auf einem freien Punkt.'
                 dots.style('cursor', 'pointer')
                 ownTokens.style('cursor', 'not-allowed')
                 enemyTokens.style('cursor', 'not-allowed')
                 break;
             case 'PLAYING_PHASE':
+                gamephase.innerText = 'Bewegen Sie einen Spielsteine durch Drag&Drop.'
                 dots.style('cursor', 'not-allowed')
                 ownTokens.style('cursor', 'grab')
                 enemyTokens.style('cursor', 'not-allowed')
                 break;
             case 'MILL':
+                gamephase.innerText = 'Entfernen Sie einen Spielstein Ihres Gegenspielers.'
                 dots.style('cursor', 'not-allowed')
                 ownTokens.style('cursor', 'not-allowed')
                 enemyTokens.style('cursor', 'pointer')
                 break;
             case'END':
+                gamephase.innerText = 'Das Spiel ist beendet.'
                 dots.style('cursor', 'default')
                 ownTokens.style('cursor', 'default')
                 enemyTokens.style('cursor', 'default')
@@ -190,6 +197,7 @@ function nextMove() {
                 break;
         }
     } else {
+        gamephase.innerText = 'Ihr Gegenspieler ist am Zug.'
         dots.style('cursor', 'not-allowed')
         ownTokens.style('cursor', 'not-allowed')
         enemyTokens.style('cursor', 'not-allowed')
@@ -209,18 +217,18 @@ function nextMove() {
     }
 
 
-    let enemyName = document.getElementById('enemyName')
-    let ownName = document.getElementById('ownName')
-    let border = document.getElementById('border')
-    if (gamedata.activePlayer === username) {
-        border.style.stroke = 'green'
-        ownName.style.color = 'green'
-        enemyName.style.color = 'black'
-    } else {
-        border.style.stroke = 'black'
-        ownName.style.color = 'black'
-        enemyName.style.color = 'green'
-    }
+    // let enemyName = document.getElementById('enemyName')
+    // let ownName = document.getElementById('ownName')
+    // let border = document.getElementById('border')
+    // if (gamedata.activePlayer === username) {
+    //     // border.style.stroke = 'var(--secondary-color)'
+    //     // ownName.style.color = 'var(--secondary-color)'
+    //     // enemyName.style.color = 'var(--secondary-color)'
+    // } else {
+    //     // border.style.stroke = 'var(--primary-color)'
+    //     // ownName.style.color = 'var(--primary-color)'
+    //     // enemyName.style.color = 'var(--primary-color)'
+    // }
 }
 
 
@@ -392,4 +400,29 @@ function setGame(tokenAttributes) {
         }
     }
     nextMove()
+}
+
+
+// Get the popup
+let popup = document.getElementById('popup');
+let waitingpopup = document.getElementById('waitingpopup');
+
+// When the user clicks anywhere outside of the popup, close it
+window.onclick = function (event) {
+    if (event.target === popup) {
+        popup.style.display = "none";
+    }
+    if (event.target === waitingpopup) {
+        waitingpopup.style.display = "none";
+    }
+}
+
+function closePopup() {
+    if (popup) {
+        popup.style.display = "none";
+    }
+    if (waitingpopup) {
+
+        waitingpopup.style.display = "none";
+    }
 }
