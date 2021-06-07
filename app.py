@@ -9,7 +9,7 @@ import eventlet
 app = Flask(__name__)
 app.secret_key = "secret_key_for_the_sessions"
 app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/muehle_db.sqlite'  # mac: 'sqlite:////tmp/muehle_db.sqlite'  # windows: 'sqlite:///C:\\dbtest\\foo.db'
+    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:\\dbtest\\foo.db'  # mac: 'sqlite:////tmp/muehle_db.sqlite'  # windows: 'sqlite:///C:\\dbtest\\foo.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -222,6 +222,8 @@ def on_removeToken(data):
 
 @socketio.on('syncGame')
 def on_syncGame(data):
+    gameSession = gameHandler.getGame(data['gameid'])
+    data['board'] = gameSession.getMinifiedBoard()
     emit('syncGame', data, to=data['gameid'])
 
 

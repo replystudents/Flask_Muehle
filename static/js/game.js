@@ -33,19 +33,22 @@ let player;
 let enemyplayer;
 
 svg.on('click', function () {
+    setFactorOffset()
     if (gamedata) {
-        if (gamedata.state === 'PLACE_PHASE') {
-            let mouse = d3.mouse(this);
-            let elem = document.elementFromPoint(mouse[0] * coordinateFactorX + coordinateOffsetX, mouse[1] * coordinateFactorY + coordinateOffsetY);
-            if (elem.classList.contains("dot")) {
-                let pos = elem.id.split('-')
-                placeTokenOnBoard(pos[1], pos[2])
-            }
-        } else if (gamedata.state === 'MILL') {
-            let mouse = d3.mouse(this);
-            let elem = document.elementFromPoint(mouse[0] * coordinateFactorX + coordinateOffsetX, mouse[1] * coordinateFactorY + coordinateOffsetY);
-            if (elem.classList.contains("player") && !elem.classList.contains(player)) {
-                removeTokenFromBoard(elem.id.split('-')[1], elem.id)
+        if (gamedata.activePlayer === username) {
+            if (gamedata.state === 'PLACE_PHASE') {
+                let mouse = d3.mouse(this);
+                let elem = document.elementFromPoint(mouse[0] * coordinateFactorX + coordinateOffsetX, mouse[1] * coordinateFactorY + coordinateOffsetY);
+                if (elem.classList.contains("dot")) {
+                    let pos = elem.id.split('-')
+                    placeTokenOnBoard(pos[1], pos[2])
+                }
+            } else if (gamedata.state === 'MILL') {
+                let mouse = d3.mouse(this);
+                let elem = document.elementFromPoint(mouse[0] * coordinateFactorX + coordinateOffsetX, mouse[1] * coordinateFactorY + coordinateOffsetY);
+                if (elem.classList.contains("player") && !elem.classList.contains(player)) {
+                    removeTokenFromBoard(elem.id.split('-')[1], elem.id)
+                }
             }
         }
     }
@@ -84,6 +87,8 @@ let startposition = [];
 let current;
 
 function dragstarted() {
+
+    setFactorOffset()
     if (gamedata.state === 'PLAYING_PHASE') {
         current = d3.select(this);
         current.style('cursor', 'grabbing')
@@ -94,6 +99,8 @@ function dragstarted() {
 }
 
 function dragged() {
+
+    setFactorOffset()
     if (gamedata.state === 'PLAYING_PHASE') {
         current = d3.select(this);
         current
@@ -103,6 +110,8 @@ function dragged() {
 }
 
 function dragended() {
+
+    setFactorOffset()
     if (gamedata.state === 'PLAYING_PHASE') {
         hideStone(true)
         current.style('cursor', 'grab')
@@ -280,13 +289,14 @@ socket.on('username', function (data) {
  */
 socket.on('startGame', function (data) {
     gamedata = data;
-    startGame()
-    if (getGame().length !== 0) {
+    console.log(getGame())
+    if (getGame() === 0) {
         socket.emit('syncGame', {
-            'gameid': gameid,
-            'tokenAttributes': getGame()
+            'gameid': gameid
         })
     }
+    console.log('startgame')
+    startGame()
 })
 /**
  * Placing
@@ -355,49 +365,40 @@ socket.on('tokenRemoved', function (data) {
  * Sync game on reload
  */
 socket.on('syncGame', function (data) {
-    if (getGame().length === 0) {
-        setGame(data.tokenAttributes)
+    console.log(data)
+    if (getGame() === 0) {
+        setGame(data.board)
     }
 })
 
 function getGame() {
     let tokens = d3.selectAll('circle.player')._groups['0']
-    let tokenAttributes = []
-    for (let i = 0; i < tokens.length; i++) {
-        tokenAttributes.push({
-            id: tokens[i].attributes.id.value,
-            class: tokens[i].attributes.class.value,
-            cx: tokens[i].attributes.cx.value,
-            cy: tokens[i].attributes.cy.value,
-            r: tokens[i].attributes.r.value
-        })
-    }
-    return tokenAttributes
+    return tokens.length
 }
 
-function setGame(tokenAttributes) {
-    for (let i = 0; i < tokenAttributes.length; i++) {
-        let playernum;
-        if (tokenAttributes[i].class.includes('player1')) {
-            playernum = 'player1'
-        } else {
-            playernum = 'player2'
-        }
-        if (tokenAttributes[i].class.includes('draggable')) {
-            svg.append("circle")
-                .attr('id', tokenAttributes[i].id)
-                .attr('class', `player ${playernum}`)
-                .attr("cx", tokenAttributes[i].cx)
-                .attr("cy", tokenAttributes[i].cy)
-                .attr("r", tokenAttributes[i].r)
-        } else {
-            let token = svg.append("circle")
-                .attr('id', tokenAttributes[i].id)
-                .attr('class', `player draggable ${playernum}`)
-                .attr("cx", tokenAttributes[i].cx)
-                .attr("cy", tokenAttributes[i].cy)
-                .attr("r", tokenAttributes[i].r)
-            dragHandler(token);
+
+function setGame(board) {
+
+    let positions = d3.selectAll('circle.dot')._groups['0']
+    let p = player === 'player1' ? 'P1' : 'P2'
+
+    for (let i = 0; i < board.length; i++) {
+        if (board[i] !== 'X') {
+            tokeninfo = board[i].split('_')
+            if (tokeninfo[0] === p) {
+                let token = svg.append("circle")
+                    .attr('id', player + '_' + tokeninfo[1])
+                    .attr('class', `player draggable ${player}`)
+                    .attr("cx", positions[i].attributes.cx.value)
+                    .attr("cy", positions[i].attributes.cy.value)
+                dragHandler(token);
+            } else {
+                svg.append("circle")
+                    .attr('id', enemyplayer + '_' + tokeninfo[1])
+                    .attr('class', `player ${enemyplayer}`)
+                    .attr("cx", positions[i].attributes.cx.value)
+                    .attr("cy", positions[i].attributes.cy.value)
+            }
         }
     }
     nextMove()
