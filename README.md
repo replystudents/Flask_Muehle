@@ -13,6 +13,8 @@ pip install eventlet
 # TODO list
 - Spiel nach neu laden korrekt anzeigen (gideon)
 - Spielseite schöner machen (gideon)
+  - Aufgeben
+  - unentschieden  
 - Spiel starten -> popup schließen (gideon)
 - AI Funktion einbringen (lorenz)
 - Spielhistorie anzeigen lassen (lorenz) und dann auch alte Spiele laden (gideon)
@@ -20,6 +22,7 @@ pip install eventlet
 - Unendschieden Regeln einbauen (lorenz)
 - Regel Page
 
+-Kein Popup bei Bot Game
 
 evtl. 
 - Leaderboard anzeigen lassen
