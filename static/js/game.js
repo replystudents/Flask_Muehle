@@ -214,11 +214,19 @@ function nextMove() {
     }
 
     if (gamedata.state === 'END') {
+
+        let endpopuptext = document.getElementById('endpopuptext')
         if (gamedata.winner) {
-            window.alert(gamedata.winner + ' hat gewonnen!')
+            gamephase.innerHTML = 'Das Spiel ist beendet.' + '<br>' + gamedata.winner + ' hat gewonnen!'
+            endpopuptext.innerText = gamedata.winner + ' hat gewonnen!'
+            // window.alert(gamedata.winner + ' hat gewonnen!')
         } else {
-            window.alert('Unendschieden')
+
+            gamephase.innerHTML = 'Das Spiel ist beendet.' + '<br>' + 'Das Ergebnis ist ein Unentschieden.'
+            endpopuptext.innerText = 'Unentschieden'
+            // window.alert('Unendschieden')
         }
+        endpopup.style.display = "block";
 
 
         socket.emit('leave', {'room': gameid})
@@ -408,6 +416,7 @@ function setGame(board) {
 // Get the popup
 let popup = document.getElementById('popup');
 let waitingpopup = document.getElementById('waitingpopup');
+let endpopup = document.getElementById('endpopup');
 
 // When the user clicks anywhere outside of the popup, close it
 window.onclick = function (event) {
@@ -417,6 +426,9 @@ window.onclick = function (event) {
     if (event.target === waitingpopup) {
         waitingpopup.style.display = "none";
     }
+    if (event.target === endpopup) {
+        endpopup.style.display = "none";
+    }
 }
 
 function closePopup() {
@@ -424,7 +436,9 @@ function closePopup() {
         popup.style.display = "none";
     }
     if (waitingpopup) {
-
         waitingpopup.style.display = "none";
+    }
+    if (endpopup) {
+        endpopup.style.display = "none";
     }
 }

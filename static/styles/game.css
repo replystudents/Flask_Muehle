@@ -117,6 +117,9 @@
     font-size: 150%;
     overflow-wrap: break-word;
 }
+#endpopup {
+    display: none;
+}
 
 #gameUrl {
 
