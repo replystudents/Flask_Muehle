@@ -166,6 +166,12 @@ function startGame() {
         enemyName.innerText = gamedata.player1
     }
 
+    if (gamedata.player1 === 'Bot' || gamedata.player2 === 'Bot') {
+
+        let tieBtn = document.getElementById('tieBtn');
+        tieBtn.style.display = 'none';
+    }
+
     nextMove()
 }
 
@@ -442,3 +448,45 @@ function closePopup() {
         endpopup.style.display = "none";
     }
 }
+
+
+function tie() {
+    let tieBtn = document.getElementById('tieBtn');
+    if (gamedata) {
+        socket.emit('tieGame', {
+            'gameid': gameid
+        })
+    }
+    tieBtn.disabled = true;
+}
+
+socket.on('wantsToTie', function () {
+    let tieBtn = document.getElementById('tieBtn');
+    tieBtn.classList.add('btn-outline-warning')
+})
+
+let surrenderCounter = 0;
+
+function surrender() {
+    let surrenderBtn = document.getElementById('surrenderBtn');
+    if (surrenderCounter === 0) {
+        surrenderBtn.classList.add('btn-outline-warning')
+        surrenderCounter++;
+    } else if (surrenderCounter === 1) {
+        surrenderBtn.classList.add('btn-outline-danger')
+        surrenderCounter++;
+
+    } else {
+        if (gamedata) {
+            socket.emit('surrenderGame', {
+                'gameid': gameid,
+                'winner': gamedata[enemyplayer]
+            })
+        }
+    }
+}
+
+socket.on('updateGameState', function (data) {
+    gamedata = data
+    nextMove()
+})

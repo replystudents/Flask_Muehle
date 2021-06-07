@@ -227,6 +227,30 @@ def on_syncGame(data):
     emit('syncGame', data, to=data['gameid'])
 
 
+@socketio.on('tieGame')
+def on_tieGame(data):
+    gameSession = gameHandler.getGame(data['gameid'])
+    if gameSession.player1.user.id == getUser().id:
+        gameSession.player1.tie = True
+    else:
+        gameSession.player2.tie = True
+    if gameSession.player1.tie and gameSession.player2.tie:
+        gameSession.winner = None
+        gameSession.state = 'END'
+        emit('updateGameState', buildGameObject(gameSession), to=data['gameid'])
+        gameHandler.saveGameInDB(data['gameid'])
+    else:
+        emit('wantsToTie', to=data['gameid'])
+
+@socketio.on('surrenderGame')
+def on_surrenderGame(data):
+    gameSession = gameHandler.getGame(data['gameid'])
+    gameSession.winner = data['winner']
+    gameSession.state = 'END'
+    emit('updateGameState', buildGameObject(gameSession), to=data['gameid'])
+    gameHandler.saveGameInDB(data['gameid'])
+
+
 def executeBotMove(gameSession, room):
     eventlet.sleep(0)
     # causes socket to send last message directly
@@ -265,7 +289,11 @@ def buildGameObject(gamedata, move=None, error=None):
         gameObject['pos_y'] = move.pos_y2
         gameObject['tokenid'] = f'{gameObject["player"]}-{move.token.id.split("_")[1]}'
     if gamedata.winner:
-        gameObject['winner'] = gamedata.winner.user.username
+        print(type(gamedata.winner))
+        if type(gamedata.winner) == type('str'):
+            gameObject['winner'] = gamedata.winner
+        else:
+            gameObject['winner'] = gamedata.winner.user.username
 
     if error and isinstance(error, Exception):
         gameObject['error'] = error.args[0]
