@@ -153,7 +153,9 @@ function hideStone(hide) {
 
 function startGame() {
     var waitingpopup = document.getElementById("waitingpopup");
-    waitingpopup.style.display = "none";
+    if (waitingpopup) {
+        waitingpopup.style.display = "none";
+    }
 
     let enemyName = document.getElementById('enemyName')
     if (gamedata.player1 === username) {
@@ -181,6 +183,8 @@ function nextMove() {
     let ownTokens = d3.selectAll('circle.player1')
     let enemyTokens = d3.selectAll('circle.player2')
     let gamephase = document.getElementById('gamephase')
+    let errormessage = document.getElementById('errormessage')
+    errormessage.innerText = ''
     if (gamedata.activePlayer === username) {
         ownTokens = d3.selectAll('circle.' + player)
         enemyTokens = d3.selectAll('circle.' + enemyplayer)
@@ -327,9 +331,6 @@ socket.on('tokenPlaced', function (data) {
     nextMove()
 })
 
-socket.on('ErrorPlacing', function (data) {
-    gamedata = data
-})
 
 function placeTokenOnBoard(pos_x, pos_y) {
     socket.emit('placeTokenOnBoard', {
@@ -348,8 +349,6 @@ socket.on('tokenMoved', function (data) {
     gamedata = data
     moveStone(data.player, data.tokenid, data.pos_x, data.pos_y)
     nextMove()
-})
-socket.on('ErrorMoving', function (data) {
 })
 
 function moveToken(token, pos_x, pos_y) {
@@ -381,6 +380,25 @@ socket.on('tokenRemoved', function (data) {
     nextMove()
 })
 
+socket.on('ErrorPlacing', function (data) {
+    gamedata = data
+    console.log(data)
+    let errormessage = document.getElementById('errormessage')
+    errormessage.innerText = 'Diese Position ist ungültig.'
+})
+socket.on('ErrorMoving', function (data) {
+    console.log(data)
+    let errormessage = document.getElementById('errormessage')
+    errormessage.innerText = 'Der Spielstein kann nicht an diese Position bewegt werden.'
+
+})
+socket.on('ErrorRemoving', function (data) {
+    console.log(data)
+    let errormessage = document.getElementById('errormessage')
+    errormessage.innerText = 'Dieser Spielstein kann nicht entfernt werden.'
+})
+
+
 /**
  * Sync game on reload
  */
@@ -407,14 +425,14 @@ function setGame(board) {
             tokeninfo = board[i].split('_')
             if (tokeninfo[0] === p) {
                 let token = svg.append("circle")
-                    .attr('id', player + '_' + tokeninfo[1])
+                    .attr('id', player + '-' + tokeninfo[1])
                     .attr('class', `player draggable ${player}`)
                     .attr("cx", positions[i].attributes.cx.value)
                     .attr("cy", positions[i].attributes.cy.value)
                 dragHandler(token);
             } else {
                 svg.append("circle")
-                    .attr('id', enemyplayer + '_' + tokeninfo[1])
+                    .attr('id', enemyplayer + '-' + tokeninfo[1])
                     .attr('class', `player ${enemyplayer}`)
                     .attr("cx", positions[i].attributes.cx.value)
                     .attr("cy", positions[i].attributes.cy.value)

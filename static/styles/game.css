@@ -164,3 +164,6 @@
     color: var(--font-color)
 }
 
+#errormessage {
+    color: red
+}

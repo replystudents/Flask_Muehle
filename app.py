@@ -242,10 +242,15 @@ def on_tieGame(data):
     else:
         emit('wantsToTie', to=data['gameid'])
 
+
 @socketio.on('surrenderGame')
 def on_surrenderGame(data):
     gameSession = gameHandler.getGame(data['gameid'])
-    gameSession.winner = data['winner']
+    if gameSession.player1.user.id == getUser().id:
+        gameSession.winner = gameSession.player2
+    else:
+        gameSession.winner = gameSession.player1
+
     gameSession.state = 'END'
     emit('updateGameState', buildGameObject(gameSession), to=data['gameid'])
     gameHandler.saveGameInDB(data['gameid'])
@@ -290,10 +295,7 @@ def buildGameObject(gamedata, move=None, error=None):
         gameObject['tokenid'] = f'{gameObject["player"]}-{move.token.id.split("_")[1]}'
     if gamedata.winner:
         print(type(gamedata.winner))
-        if type(gamedata.winner) == type('str'):
-            gameObject['winner'] = gamedata.winner
-        else:
-            gameObject['winner'] = gamedata.winner.user.username
+        gameObject['winner'] = gamedata.winner.user.username
 
     if error and isinstance(error, Exception):
         gameObject['error'] = error.args[0]
@@ -302,4 +304,4 @@ def buildGameObject(gamedata, move=None, error=None):
 
 if __name__ == '__main__':
     # app.run()
-    socketio.run(app)
+    socketio.run(app, host='0.0.0.0')

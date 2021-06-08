@@ -24,6 +24,8 @@ pip install eventlet
 
 -Kein Popup bei Bot Game
 
+-Smartphone bugs
+
 evtl. 
 - Leaderboard anzeigen lassen
 - contact und impressum
@@ -32,7 +34,3 @@ evtl.
 
 Am ende: 
 - code refactoring (zusammen)
-
-# BUG
-- bei neuer DB Absturz wenn man ein AI Spiel starten will
-- kein Unentschieden nach 20 Zügen, der Wert wird nicht inkrementiert
