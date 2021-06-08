@@ -66,6 +66,8 @@ For small devices
 @media only screen and (max-width: 700px) {
     .body {
         display: block;
+        background: var(--surface-color);
+
     }
 
     .sidebar {
@@ -80,6 +82,11 @@ For small devices
         text-decoration: none;
         border: 0;
         outline: 0;
+        background: var(--surface-color);
+    }
+
+    #sidebar_icon {
+        color: var(--font-color);
     }
 
     .sidebar_trigger:hover + .sidebar, .sidebar:hover {
@@ -101,6 +108,7 @@ For mobile devices
 @media only screen and (max-device-width: 700px) {
     .body {
         display: block;
+        background: var(--surface-color);
     }
 
     .sidebar {
@@ -115,6 +123,7 @@ For mobile devices
     #sidebar_icon {
         font-size: 90px;
         margin: 10px 20px;
+        color: var(--font-color);
     }
 
     .sidebar_trigger {
@@ -122,6 +131,7 @@ For mobile devices
         width: 100px;
         outline: 0;
         border: 0;
+        background: var(--surface-color);
     }
 
     .sidebar_trigger:hover + .sidebar, .sidebar:hover {

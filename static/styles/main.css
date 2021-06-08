@@ -78,7 +78,7 @@ h2 {
 }
 
 .active_games {
-    height: calc(35% - 20px);
+    height: calc(35vh - 20px);
     margin: 20px;
     width: calc(100% - 40px);
     margin-top: 0px;
@@ -121,7 +121,7 @@ h2 {
 
 
 .game_history {
-    height: calc(45% - 40px);
+    height: calc(45vh - 40px);
     width: calc(100% - 40px);
     margin: 20px;
 }
@@ -244,5 +244,12 @@ h2 {
     }
 }
 
-@media only screen and (max-width: 1050px) {
+@media only screen and (max-height: 900px) {
+    .game_history div {
+        height: 65%;
+    }
+
+    .active_games div {
+        height: 65%;
+    }
 }

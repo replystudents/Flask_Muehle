@@ -14,7 +14,7 @@ if platform.system() == 'Windows':
         'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:\\dbtest\\foo.db'  # mac: 'sqlite:////tmp/muehle_db.sqlite'  # windows: 'sqlite:///C:\\dbtest\\foo.db'
 else:
     app.config[
-        'SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/muehle_db1.sqlite'  # mac: 'sqlite:////tmp/muehle_db.sqlite'  # windows: 'sqlite:///C:\\dbtest\\foo.db'
+        'SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/muehle_db.sqlite'  # mac: 'sqlite:////tmp/muehle_db.sqlite'  # windows: 'sqlite:///C:\\dbtest\\foo.db'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -300,7 +300,6 @@ def buildGameObject(gamedata, move=None, error=None):
         gameObject['pos_y'] = move.pos_y2
         gameObject['tokenid'] = f'{gameObject["player"]}-{move.token.id.split("_")[1]}'
     if gamedata.winner:
-        print(type(gamedata.winner))
         gameObject['winner'] = gamedata.winner.user.username
 
     if error and isinstance(error, Exception):
