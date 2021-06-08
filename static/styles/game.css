@@ -7,11 +7,11 @@
 
 .dot {
     fill: black;
-    r: 14;
+    r: 4%;
 }
 
 .player {
-    r: 20;
+    r: 5%;
     stroke-width: 2;
     z-index: 1;
 }
