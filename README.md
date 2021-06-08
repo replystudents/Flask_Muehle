@@ -24,6 +24,8 @@ pip install eventlet
 
 -Kein Popup bei Bot Game
 
+-Smartphone bugs
+
 evtl. 
 - Leaderboard anzeigen lassen
 - contact und impressum

@@ -153,7 +153,9 @@ function hideStone(hide) {
 
 function startGame() {
     var waitingpopup = document.getElementById("waitingpopup");
-    waitingpopup.style.display = "none";
+    if (waitingpopup) {
+        waitingpopup.style.display = "none";
+    }
 
     let enemyName = document.getElementById('enemyName')
     if (gamedata.player1 === username) {
@@ -166,6 +168,12 @@ function startGame() {
         enemyName.innerText = gamedata.player1
     }
 
+    if (gamedata.player1 === 'Bot' || gamedata.player2 === 'Bot') {
+
+        let tieBtn = document.getElementById('tieBtn');
+        tieBtn.style.display = 'none';
+    }
+
     nextMove()
 }
 
@@ -175,6 +183,8 @@ function nextMove() {
     let ownTokens = d3.selectAll('circle.player1')
     let enemyTokens = d3.selectAll('circle.player2')
     let gamephase = document.getElementById('gamephase')
+    let errormessage = document.getElementById('errormessage')
+    errormessage.innerText = ''
     if (gamedata.activePlayer === username) {
         ownTokens = d3.selectAll('circle.' + player)
         enemyTokens = d3.selectAll('circle.' + enemyplayer)
@@ -214,11 +224,25 @@ function nextMove() {
     }
 
     if (gamedata.state === 'END') {
+
+
+        let tieBtn = document.getElementById('tieBtn');
+        let surrenderBtn = document.getElementById('surrenderBtn');
+        tieBtn.disabled = true;
+        surrenderBtn.disabled = true;
+
+        let endpopuptext = document.getElementById('endpopuptext')
         if (gamedata.winner) {
-            window.alert(gamedata.winner + ' hat gewonnen!')
+            gamephase.innerHTML = 'Das Spiel ist beendet.' + '<br>' + gamedata.winner + ' hat gewonnen!'
+            endpopuptext.innerText = gamedata.winner + ' hat gewonnen!'
+            // window.alert(gamedata.winner + ' hat gewonnen!')
         } else {
-            window.alert('Unendschieden')
+
+            gamephase.innerHTML = 'Das Spiel ist beendet.' + '<br>' + 'Das Ergebnis ist ein Unentschieden.'
+            endpopuptext.innerText = 'Unentschieden'
+            // window.alert('Unendschieden')
         }
+        endpopup.style.display = "block";
 
 
         socket.emit('leave', {'room': gameid})
@@ -307,9 +331,6 @@ socket.on('tokenPlaced', function (data) {
     nextMove()
 })
 
-socket.on('ErrorPlacing', function (data) {
-    gamedata = data
-})
 
 function placeTokenOnBoard(pos_x, pos_y) {
     socket.emit('placeTokenOnBoard', {
@@ -328,8 +349,6 @@ socket.on('tokenMoved', function (data) {
     gamedata = data
     moveStone(data.player, data.tokenid, data.pos_x, data.pos_y)
     nextMove()
-})
-socket.on('ErrorMoving', function (data) {
 })
 
 function moveToken(token, pos_x, pos_y) {
@@ -361,6 +380,25 @@ socket.on('tokenRemoved', function (data) {
     nextMove()
 })
 
+socket.on('ErrorPlacing', function (data) {
+    gamedata = data
+    console.log(data)
+    let errormessage = document.getElementById('errormessage')
+    errormessage.innerText = 'Diese Position ist ungültig.'
+})
+socket.on('ErrorMoving', function (data) {
+    console.log(data)
+    let errormessage = document.getElementById('errormessage')
+    errormessage.innerText = 'Der Spielstein kann nicht an diese Position bewegt werden.'
+
+})
+socket.on('ErrorRemoving', function (data) {
+    console.log(data)
+    let errormessage = document.getElementById('errormessage')
+    errormessage.innerText = 'Dieser Spielstein kann nicht entfernt werden.'
+})
+
+
 /**
  * Sync game on reload
  */
@@ -387,14 +425,14 @@ function setGame(board) {
             tokeninfo = board[i].split('_')
             if (tokeninfo[0] === p) {
                 let token = svg.append("circle")
-                    .attr('id', player + '_' + tokeninfo[1])
+                    .attr('id', player + '-' + tokeninfo[1])
                     .attr('class', `player draggable ${player}`)
                     .attr("cx", positions[i].attributes.cx.value)
                     .attr("cy", positions[i].attributes.cy.value)
                 dragHandler(token);
             } else {
                 svg.append("circle")
-                    .attr('id', enemyplayer + '_' + tokeninfo[1])
+                    .attr('id', enemyplayer + '-' + tokeninfo[1])
                     .attr('class', `player ${enemyplayer}`)
                     .attr("cx", positions[i].attributes.cx.value)
                     .attr("cy", positions[i].attributes.cy.value)
@@ -408,6 +446,7 @@ function setGame(board) {
 // Get the popup
 let popup = document.getElementById('popup');
 let waitingpopup = document.getElementById('waitingpopup');
+let endpopup = document.getElementById('endpopup');
 
 // When the user clicks anywhere outside of the popup, close it
 window.onclick = function (event) {
@@ -417,6 +456,9 @@ window.onclick = function (event) {
     if (event.target === waitingpopup) {
         waitingpopup.style.display = "none";
     }
+    if (event.target === endpopup) {
+        endpopup.style.display = "none";
+    }
 }
 
 function closePopup() {
@@ -424,7 +466,54 @@ function closePopup() {
         popup.style.display = "none";
     }
     if (waitingpopup) {
-
         waitingpopup.style.display = "none";
     }
+    if (endpopup) {
+        endpopup.style.display = "none";
+    }
 }
+
+
+function tie() {
+    if (gamedata) {
+        let tieBtn = document.getElementById('tieBtn');
+        socket.emit('tieGame', {
+            'gameid': gameid
+        })
+        tieBtn.disabled = true;
+    }
+}
+
+socket.on('wantsToTie', function () {
+    let tieBtn = document.getElementById('tieBtn');
+    tieBtn.classList.add('btn-outline-warning')
+})
+
+let surrenderCounter = 0;
+
+function surrender() {
+    if (gamedata) {
+        let surrenderBtn = document.getElementById('surrenderBtn');
+        if (surrenderCounter === 0) {
+            surrenderBtn.classList.add('btn-outline-warning')
+            surrenderCounter++;
+        } else if (surrenderCounter === 1) {
+            surrenderBtn.classList.add('btn-outline-danger')
+            surrenderCounter++;
+
+        } else {
+            if (gamedata) {
+                socket.emit('surrenderGame', {
+                    'gameid': gameid,
+                    'winner': gamedata[enemyplayer]
+                })
+                surrenderBtn.disabled = true;
+            }
+        }
+    }
+}
+
+socket.on('updateGameState', function (data) {
+    gamedata = data
+    nextMove()
+})

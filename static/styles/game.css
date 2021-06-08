@@ -117,6 +117,9 @@
     font-size: 150%;
     overflow-wrap: break-word;
 }
+#endpopup {
+    display: none;
+}
 
 #gameUrl {
 
@@ -135,7 +138,7 @@
 }
 
 .sections {
-    max-width: 1000px;
+    max-width: 90vh;
     margin: 10px;
     text-align: center;
     justify-content: center;
@@ -161,3 +164,6 @@
     color: var(--font-color)
 }
 
+#errormessage {
+    color: red
+}

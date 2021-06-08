@@ -58,6 +58,20 @@
     </div>
     {% endif %}
 
+    <div id="endpopup" class="modal">
+        <div class="modal-content">
+            <p class="popupheader">
+                Das Spiel ist beendet.
+            </p>
+            <button type="button" class="closebutton btn btn-outline-secondary btn-sm" onclick="closePopup()">
+                Schließen
+            </button>
+
+            <p id="endpopuptext" class="popuptext"></p>
+
+        </div>
+    </div>
+
     <div class="sections row">
         <div class="col-5">
             <h2 id="ownName">{{user.username}}</h2>
@@ -80,6 +94,13 @@
         <h3>Spielphase:</h3>
         <hr>
         <p id="gamephase"></p>
+            <p id="errormessage"></p>
+        <button id="surrenderBtn" class="btn btn-outline-primary btn-sm" onclick="surrender()">
+            Aufgeben
+        </button>
+        <button id="tieBtn" class="btn btn-outline-primary btn-sm" onclick="tie()">
+            Unentschieden
+        </button>
     </div>
 
 
