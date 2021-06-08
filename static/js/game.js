@@ -387,14 +387,14 @@ function setGame(board) {
             tokeninfo = board[i].split('_')
             if (tokeninfo[0] === p) {
                 let token = svg.append("circle")
-                    .attr('id', player + '_' + tokeninfo[1])
+                    .attr('id', player + '-' + tokeninfo[1])
                     .attr('class', `player draggable ${player}`)
                     .attr("cx", positions[i].attributes.cx.value)
                     .attr("cy", positions[i].attributes.cy.value)
                 dragHandler(token);
             } else {
                 svg.append("circle")
-                    .attr('id', enemyplayer + '_' + tokeninfo[1])
+                    .attr('id', enemyplayer + '-' + tokeninfo[1])
                     .attr('class', `player ${enemyplayer}`)
                     .attr("cx", positions[i].attributes.cx.value)
                     .attr("cy", positions[i].attributes.cy.value)

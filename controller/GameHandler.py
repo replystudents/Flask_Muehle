@@ -80,7 +80,8 @@ class GameHandler:
 
 	def getFinishedUserGames(self, user):
 		games = []
-		finishedGames = Game.query.filter((Game.playerId1 == user.id) | (Game.playerId2 == user.id)).all()
+		finishedGames = Game.query.filter((Game.playerId1 == user.id) | (Game.playerId2 == user.id)).order_by(
+			Game.date.desc()).all()
 		for game in finishedGames:
 			player1 = User.query.filter((User.id == game.playerId1)).first()
 			player2 = User.query.filter((User.id == game.playerId2)).first()
@@ -98,7 +99,7 @@ class GameHandler:
 	def getUserStatistics(self, user):
 		draw = 0
 		win = 0
-		lose = 0
+		loss = 0
 		userGames = self.getFinishedUserGames(user)
 		for game in userGames:
 			if game['resultP1'] == game['resultP2']:
@@ -108,5 +109,5 @@ class GameHandler:
 			elif game['resultP2'] == '1' and game['player2'] == user.username:
 				win += 1
 			else:
-				lose += 1
-		return (win, lose, draw)
+				loss += 1
+		return (win, loss, draw)

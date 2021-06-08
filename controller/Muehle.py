@@ -104,13 +104,11 @@ class Muehle:
 
 	def executeMove(self, move: Move, tmpMove=False):
 		if move.place:
-			self.placeTokenOnBoard(move=move)
+			self.placeTokenOnBoard(move=move, tmpMove=tmpMove)
 		elif move.delete:
-			self.removeTokenFromBoard(move=move)
+			self.removeTokenFromBoard(move=move, tmpMove=tmpMove)
 		else:
-			self.move(move=move)
-		if tmpMove is False:
-			self.positions.append(self.getMinifiedBoard())
+			self.move(move=move, tmpMove=tmpMove)
 
 	def placeTokenOnBoard(self, token: Token = None, pos_x=None, pos_y=None, move: Move = None, tmpMove=False) -> Move:
 		if token and token.player != self.activePlayer:
@@ -163,9 +161,9 @@ class Muehle:
 		if tmpMove is False:
 			self.positions.append(self.getMinifiedBoard())
 			finished, winner = self.isGameFinished()
-		if finished:
-			self.state = states['end']
-			self.winner = winner
+			if finished:
+				self.state = states['end']
+				self.winner = winner
 		return move
 
 	def move(self, token: Token = None, pos_x=None, pos_y=None, move=None, tmpMove=False) -> Move:
@@ -190,6 +188,7 @@ class Muehle:
 					self.changePlayer()
 				self.possibleMoves = self.getPossibleMoves()
 				if tmpMove is False:
+					self.movesWithoutMill += 1
 					self.positions.append(self.getMinifiedBoard())
 					finished, winner = self.isGameFinished()
 					if finished:

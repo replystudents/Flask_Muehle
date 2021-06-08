@@ -17,7 +17,7 @@
         const data = google.visualization.arrayToDataTable([
             ['Type', 'Number'],
             ['Win', parseInt('{{statistics.0}}')],
-            ['Lose', parseInt('{{statistics.1}}')],
+            ['Loss', parseInt('{{statistics.1}}')],
             ['Draw', parseInt('{{statistics.2}}')]
         ]);
         const options = {
@@ -130,7 +130,7 @@
             </div>
         </div>
         {% endif %}
-        {% if statistics is defined %}
+        {% if statistics is defined and (statistics.0 > 0 or statistics.1 > 0 or statistics.2 > 0) %}
         <div class="statistics container_item">
             <h2>Statistik:</h2>
             <div id="piechart"></div>

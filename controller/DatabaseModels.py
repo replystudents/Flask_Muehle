@@ -3,7 +3,9 @@ import datetime
 from flask_sqlalchemy import SQLAlchemy
 from random_username.generate import generate_username
 
-db = SQLAlchemy()
+db = SQLAlchemy(session_options={
+	'expire_on_commit': False
+})
 
 
 class User(db.Model):
