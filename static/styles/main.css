@@ -17,6 +17,7 @@ h2 {
 .play_container {
     display: flex;
     height: 20%;
+    min-height: 160px;
 
 }
 

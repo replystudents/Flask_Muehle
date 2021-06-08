@@ -4,6 +4,7 @@ import random
 points_for_mill = 2
 points_for_token = 10
 points_for_possible_move = .1
+points_for_win = 200
 
 
 def getBestMove(game: Muehle, player: Player, depth):
@@ -74,27 +75,29 @@ def max_move(game: Muehle, depth, player):
 
 def rating(game: Muehle, player, depth):
 	value = 0
-	for token in player.tokenList:
-		if game.isMill(player, token):
-			pass
-			value += points_for_mill
-
-	for token in player.startTokenList:
-		if game.isMill(player, token):
-			pass
-			value += points_for_mill
-
-	diff = len(player.tokenList) - len(game.getOtherPlayer(player).tokenList)
-	value += diff * points_for_token
-
-	value += len(game.getPossibleMoves()) * points_for_possible_move
 	finished, winner = game.isGameFinished()
 	if finished:
 		if winner:
-			value += 100 * (1 + depth) if winner == player else -100
+			value += points_for_win * (1 + depth) if winner == player else -points_for_win
 		else:  # draw
-			value += 100 * (
-						1 + depth) if value < 0 else -100  # if own rating is less then rating of opponent, than it´s good to draw
+			value += points_for_win * (
+					1 + depth) if value < 0 else -points_for_win  # if own rating is less then rating of opponent, than it´s good to draw
+	else:
+		for token in player.tokenList:
+			if game.isMill(player, token):
+				pass
+				value += points_for_mill / 3
+
+		for token in player.startTokenList:
+			if game.isMill(player, token):
+				pass
+				value += points_for_mill / 3
+
+		diff = (len(player.tokenList) + len(player.startTokenList)) - (
+					len(game.getOtherPlayer().startTokenList) + len(game.getOtherPlayer(player).tokenList))
+		value += diff * points_for_token
+
+		value += len(game.possibleMoves) * points_for_possible_move
 	return value
 
 
