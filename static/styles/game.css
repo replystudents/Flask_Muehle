@@ -89,8 +89,7 @@
 }
 
 .button {
-    margin:10px;
-    font-size: 150%
+    margin: 10px;
 }
 
 /* The Close Button */
@@ -117,6 +116,7 @@
     font-size: 150%;
     overflow-wrap: break-word;
 }
+
 #endpopup {
     display: none;
 }
@@ -127,7 +127,7 @@
 
 .closebutton {
     float: right;
-    font-size:100%;
+    font-size: 100%;
 }
 
 #game {
@@ -165,4 +165,15 @@
 
 #errormessage {
     color: red
+}
+
+
+/**
+For mobile devices
+ */
+@media only screen and (max-device-width: 700px) {
+    button {
+        font-size: 100% !important;
+
+    }
 }
