@@ -26,6 +26,11 @@
     margin: auto;
 }
 
+.game_history div {
+    overflow: auto;
+    height: 95%;
+}
+
 .game_history table {
     width: 90%;
     margin: 5%;

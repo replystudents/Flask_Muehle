@@ -253,3 +253,13 @@ h2 {
         height: 65%;
     }
 }
+
+@media only screen and (max-device-width: 700px) {
+    .play_bot button {
+        font-size: 40px;
+    }
+
+    .play_friend button {
+        font-size: 40px;
+    }
+}

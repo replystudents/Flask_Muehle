@@ -28,10 +28,11 @@
             legend: {position: 'none'},
             pieSliceBorderColor: "transparent"
         };
+        if (parseInt('{{statistics.0}}') !== 0 || parseInt('{{statistics.1}}') !== 0 || parseInt('{{statistics.2}}') !== 0) {
+            const chart = new google.visualization.PieChart(document.getElementById('piechart'));
 
-        const chart = new google.visualization.PieChart(document.getElementById('piechart'));
-
-        chart.draw(data, options);
+            chart.draw(data, options);
+        }
     }
 </script>
 
