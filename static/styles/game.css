@@ -151,7 +151,6 @@
 #gamepage {
     margin: auto;
     width: 100%;
-    min-height: 100%;
     background: var(--surface-color);
     display: flex;
     flex-wrap: wrap;

@@ -10,6 +10,7 @@
     height: 100vh;
     width: 100%;
     margin-left: 280px;
+    background-color: var(--surface-color);
 }
 
 .body {
