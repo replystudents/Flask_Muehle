@@ -5,17 +5,16 @@ from controller.GameHandler import GameHandler, GameQueueObject
 from controller.Muehle import Muehle, Move
 from controller.AI import getBestMove
 import eventlet
-import platform
+import os
 
 app = Flask(__name__)
 app.secret_key = "secret_key_for_the_sessions"
-if platform.system() == 'Windows':
-    app.config[
-        'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:\\dbtest\\foo.db'  # mac: 'sqlite:////tmp/muehle_db.sqlite'  # windows: 'sqlite:///C:\\dbtest\\foo.db'
-else:
-    app.config[
-        'SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/muehle_db.sqlite'  # mac: 'sqlite:////tmp/muehle_db.sqlite'  # windows: 'sqlite:///C:\\dbtest\\foo.db'
-
+basedir = os.path.abspath(
+    os.path.dirname(
+        __file__
+    )
+)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "MuehleDB.sqlite")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
