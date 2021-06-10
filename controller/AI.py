@@ -94,10 +94,12 @@ def rating(game: Muehle, player, depth):
 				value += points_for_mill / 3
 
 		diff = (len(player.tokenList) + len(player.startTokenList)) - (
-					len(game.getOtherPlayer().startTokenList) + len(game.getOtherPlayer(player).tokenList))
+				len(game.getOtherPlayer().startTokenList) + len(game.getOtherPlayer(player).tokenList))
 		value += diff * points_for_token
-
-		value += len(game.possibleMoves) * points_for_possible_move
+		if player == game.activePlayer:
+			value += len(game.possibleMoves) * points_for_possible_move
+		else:
+			value -= len(game.possibleMoves) * points_for_possible_move  # possible moves for opponent
 	return value
 
 

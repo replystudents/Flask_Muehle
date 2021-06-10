@@ -57,7 +57,7 @@ def deleteTmpUsers():
 
 
 def getLeaderboard():
-	leaderboardQuery = User.query.join(Game, (Game.playerId1 == User.id) | (Game.playerId2 == User.id)).add_columns(
+	leaderboardQuery = User.query.join(Game, (Game.winner == User.id)).add_columns(
 		Game.winner).all()
 	leaderboardUsers = {}
 	for item in leaderboardQuery:
