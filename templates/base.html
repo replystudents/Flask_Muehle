@@ -54,24 +54,11 @@
             </li>
         </ul>
         <hr>
-        <div class="dropdown">
-            <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
-               id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+        <div>
+            <a href="#" class="d-flex align-items-center text-white text-decoration-none"
+               id="dropdownUser1" aria-expanded="false">
                 <strong>{{ user.username}}</strong>
             </a>
-            <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1" style="">
-                {% if user.isTmpUser %}
-                <li><a class="dropdown-item" href="/sign_in">Anmelden</a></li>
-                <li><a class="dropdown-item" href="/sign_up">Registrieren</a></li>
-                {% else %}
-                <li><a class="dropdown-item" href="/settings">Einstellungen</a></li>
-                <li><a class="dropdown-item" href="/profile">Account</a></li>
-                <li>
-                    <hr class="dropdown-divider">
-                </li>
-                <li><a class="dropdown-item" href="/sign_out">Sign out</a></li>
-                {% endif %}
-            </ul>
         </div>
         <footer class="footer text-muted text-center text-small">
             <p class="mb-1">© 2021 Mühle.com</p>
