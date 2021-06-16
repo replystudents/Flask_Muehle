@@ -324,7 +324,7 @@ class Muehle:
 				return True
 		return False
 
-	def getPossibleMoves(self) -> list[Move]:
+	def getPossibleMoves(self):
 		possibleMoves = []
 		if self.state == states['placePhase']:
 			# All free positions
