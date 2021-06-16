@@ -20,7 +20,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 db.create_all(app=app)
 
-socketio = SocketIO(app)
+socketio = SocketIO(app, async_mode="threading")
 gameHandler = GameHandler()
 
 
@@ -228,7 +228,7 @@ def on_removeToken(data):
 @socketio.on('syncGame')
 def on_syncGame(data):
     gameSession = gameHandler.getGame(data['gameid'])
-    data['board'] = gameSession.getMinifiedBoard()
+    data['board'] = gameSession.positions[-1]
     emit('syncGame', data, to=data['gameid'])
 
 
