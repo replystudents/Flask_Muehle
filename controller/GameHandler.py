@@ -39,8 +39,6 @@ class GameHandler:
 				game = Muehle(game.player2, game.player1)
 			self.activeGames.setdefault(gameId, game)
 			self.gameQueue.pop(gameId)
-			game.player1.user.setActiveGame(gameId)
-			game.player2.user.setActiveGame(gameId)
 			return game
 		else:
 			return Exception('Second Player not registered')

@@ -69,7 +69,6 @@ class Player:
 		self.tokenList = []
 		self.user = user
 		self.playerNumber = PlayerNumber
-		self.tie = None
 
 	def getNumberOfTokens(self):
 		return len(self.tokenList)
@@ -148,7 +147,6 @@ class Muehle:
 		if self.state == states['mill']:
 			token = token or move.token
 			self.board[x][y] = 'X'
-			# Dadurch funktioniert getNumberOfTokens nicht mehr, aber ich habe eine Möglichkeit gebraucht um die tokens auszuwählen.
 			token.player.tokenList.remove(token)
 			self.moves.append(move)
 			token.setPosition(-1, -1)
@@ -467,6 +465,7 @@ class Muehle:
 		return False, None
 
 
+# for testing purpose
 if __name__ == '__main__':
 	muehle = Muehle('player1', 'player2')
 	muehle.printBoard()

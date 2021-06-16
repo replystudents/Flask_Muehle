@@ -9,11 +9,11 @@ db = SQLAlchemy(session_options={
 
 
 class User(db.Model):
+	__tablename__ = 'user'
 	id = db.Column(db.Integer, primary_key=True)
 	username = db.Column(db.String(100), unique=True, nullable=False)
 	email = db.Column(db.String(120), unique=True)
 	password = db.Column(db.String(100))
-	activeGame = db.Column(db.String(36))
 	isTmpUser = db.Column(db.Boolean, default=False)
 	isBot = db.Column(db.Boolean, default=False)
 
@@ -29,15 +29,13 @@ class User(db.Model):
 			self.email = email
 			self.password = password
 
-	def setActiveGame(self, gameId):
-		self.activeGame = gameId
-
 
 class Game(db.Model):
-	gameId = db.Column(db.String, primary_key=True)
-	playerId1 = db.Column(db.String(100))
-	playerId2 = db.Column(db.String(100))
-	winner = db.Column(db.String)
+	__tablename__ = 'game'
+	gameId = db.Column(db.String(36), primary_key=True)
+	playerId1 = db.Column(db.String(100), db.ForeignKey('user.id'), nullable=False)
+	playerId2 = db.Column(db.String(100), db.ForeignKey('user.id'), nullable=False)
+	winner = db.Column(db.String(100), db.ForeignKey('user.id'), nullable=True)
 	date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 	positions = db.Column(db.JSON)
 
