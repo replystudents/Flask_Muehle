@@ -60,7 +60,7 @@ def game():
     if request.method == 'POST':
         gameid = gameHandler.queueNewGame(user)
         if request.form['gametype'] == 'bot':
-            bot = User.query.filter(User.isBot is True).first()
+            bot = User.query.filter(User.isBot == True).first()
             if bot is None:
                 bot = User(isBot=True)
                 db.session.add(bot)
