@@ -262,7 +262,7 @@ def on_surrenderGame(data):
 
 
 def executeBotMove(gameSession, room):
-    eventlet.sleep(0)
+    # eventlet.sleep(0)  TODO brauchen wir das noch, nachdem wir async_mode = threading gesetzt haben?
     # causes socket to send last message directly
     # otherwise the message would be send together with the bot move
     if len(gameSession.player1.tokenList) == 3 and len(gameSession.player2.tokenList) == 3:
@@ -307,5 +307,4 @@ def buildGameObject(gamedata, move=None, error=None):
 
 
 if __name__ == '__main__':
-    # app.run()
     socketio.run(app, host='0.0.0.0')
