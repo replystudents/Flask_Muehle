@@ -1,10 +1,9 @@
-from flask import Flask, render_template, request, session, redirect, flash
+from flask import Flask, render_template, request, session, redirect
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
 from controller.DatabaseModels import db, User, Game, getLeaderboard
 from controller.GameHandler import GameHandler, GameQueueObject
 from controller.Muehle import Muehle, Move
 from controller.AI import getBestMove
-import eventlet
 import os
 
 app = Flask(__name__)
@@ -262,9 +261,6 @@ def on_surrenderGame(data):
 
 
 def executeBotMove(gameSession, room):
-    # eventlet.sleep(0)  TODO brauchen wir das noch, nachdem wir async_mode = threading gesetzt haben?
-    # causes socket to send last message directly
-    # otherwise the message would be send together with the bot move
     if len(gameSession.player1.tokenList) == 3 and len(gameSession.player2.tokenList) == 3:
         move = getBestMove(gameSession, gameSession.activePlayer, 2)
     else:
