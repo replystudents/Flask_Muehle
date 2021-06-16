@@ -3,3 +3,4 @@ eventlet
 flask-socketio
 Flask-SQLAlchemy
 random-username
+simple_websocket
