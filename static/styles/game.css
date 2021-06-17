@@ -26,46 +26,13 @@
     stroke: white;
 }
 
-
-.static {
-    /*cursor: not-allowed;*/
-}
-
-.draggable {
-    /*cursor: move;*/
-}
-
-
-#dot {
-
-}
-
-#topline,
-#rightline,
-#bottomline,
-#leftline {
-    /*
-    marker-start: url(#dot);
-    marker-end: url(#dot)
-    */
-}
-
 #border {
     fill: none;
-    /*stroke: black;*/
-    /*stroke-width: 5;*/
-}
-
-#outerrect,
-#middlerect,
-#innerrect {
-
 }
 
 /* The Modal (background) */
 .modal {
     display: block; /* Hidden by default */
-
     position: fixed; /* Stay in place */
     z-index: 1; /* Sit on top */
     left: 0;
@@ -121,10 +88,6 @@
     display: none;
 }
 
-#gameUrl {
-
-}
-
 .closebutton {
     float: right;
     font-size: 100%;
@@ -166,7 +129,6 @@
 #errormessage {
     color: red
 }
-
 
 /**
 For mobile devices
