@@ -102,26 +102,9 @@ def history_page():
     return render_template('history.html', user=user, game_history=game_history)
 
 
-# @socketio.on('message')
-# def handle_message(data):
-#     #print('received message: ' + data)
-#
-#
-# @socketio.on('json')
-# def handle_json(json):
-#     #print('received json: ' + str(json))
-
-
 @socketio.on('connected')
-def on_connected(json):
+def on_connected(data):
     emit('username', str(getUser().username))
-
-
-# @socketio.on('validate move')
-# def validateMove():
-#     #print('validateMove')
-#
-#     emit('gameUpdated', 'gameUpdated')
 
 
 @socketio.on('join')

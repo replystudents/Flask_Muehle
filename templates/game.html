@@ -11,16 +11,15 @@
 <div id="gamepage">
 
     {% if newgame is true() %}
+
     <div id="popup" class="modal" style="display:block;">
         <div class="modal-content">
-
             <p class="popupheader">
                 Neues Spiel starten
             </p>
             <button type="button" class="closebutton btn btn-outline-secondary btn-sm" onclick="closePopup()">
                 Schließen
             </button>
-
             <p class="popuptext">Bitte wählen Sie ob Sie ein Spiel gegen einen menschlichen Spieler oder gegen den
                 Computer
                 spielen möchten.</p>
@@ -35,10 +34,11 @@
                 >Computer Gegner
                 </button>
             </div>
-
         </div>
     </div>
+
     {% else %}
+
     <div id="waitingpopup" class="modal">
         <div class="modal-content">
             <p class="popupheader">
@@ -47,15 +47,14 @@
             <button type="button" class="closebutton btn btn-outline-secondary btn-sm" onclick="closePopup()">
                 Schließen
             </button>
-
             <p class="popuptext">Schicken Sie den Link an ihren Mitspieler:</p>
             <div class="row">
-
                 <input id="gameUrl" type="url" value="" readonly>
                 <small>Durch Klicken in die Zwischenablage kopieren</small>
             </div>
         </div>
     </div>
+
     {% endif %}
 
     <div id="endpopup" class="modal">
@@ -66,9 +65,7 @@
             <button type="button" class="closebutton btn btn-outline-secondary btn-sm" onclick="closePopup()">
                 Schließen
             </button>
-
             <p id="endpopuptext" class="popuptext"></p>
-
         </div>
     </div>
 
@@ -88,7 +85,7 @@
         <h3>Spielphase:</h3>
         <hr>
         <p id="gamephase"></p>
-            <p id="errormessage"></p>
+        <p id="errormessage"></p>
         <button id="surrenderBtn" class="btn btn-outline-primary btn-sm" onclick="surrender()">
             Aufgeben
         </button>
@@ -97,21 +94,19 @@
         </button>
     </div>
 
-
     <div class="sections row">
-
         <svg id="game" width="100%" height="100%" viewBox="0 0 400 400">
 
             <rect id="border" x="0" y="0" width="400" height="400"></rect>
+
+            <rect class="board" id="outerrect" x="50" y="50" width="300" height="300"></rect>
+            <rect class="board" id="middlerect" x="100" y="100" width="200" height="200"></rect>
+            <rect class="board" id="innerrect" x="150" y="150" width="100" height="100"></rect>
 
             <line class="board" id="topline" x1="200" y1="50" x2="200" y2="150"/>
             <line class="board" id="rightline" x1="250" y1="200" x2="350" y2="200"/>
             <line class="board" id="bottomline" x1="200" y1="250" x2="200" y2="350"/>
             <line class="board" id="leftline" x1="50" y1="200" x2="150" y2="200"/>
-
-            <rect class="board" id="outerrect" x="50" y="50" width="300" height="300"></rect>
-            <rect class="board" id="middlerect" x="100" y="100" width="200" height="200"></rect>
-            <rect class="board" id="innerrect" x="150" y="150" width="100" height="100"></rect>
 
             <circle id="pos-0-0" class="dot" cx="50" cy="50" r="15"/>
             <circle id="pos-0-3" class="dot" cx="200" cy="50" r="15"/>
@@ -139,11 +134,10 @@
             <circle id="pos-6-6" class="dot" cx="350" cy="350" r="15"/>
 
         </svg>
-        <script src="/static/js/game.js"></script>
-
     </div>
 
 </div>
 
+<script src="/static/js/game.js"></script>
 
 {% endblock %}

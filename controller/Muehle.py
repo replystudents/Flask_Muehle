@@ -69,6 +69,7 @@ class Player:
 		self.tokenList = []
 		self.user = user
 		self.playerNumber = PlayerNumber
+		self.tie = None #
 
 	def getNumberOfTokens(self):
 		return len(self.tokenList)
