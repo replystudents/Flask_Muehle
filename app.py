@@ -149,7 +149,7 @@ def on_placeToken(data):
         emit('tokenPlaced', buildGameObject(gameSession, move=move), to=data['gameid'])
 
         # if bot has to make a move
-        if gameSession.activePlayer.user.isBot and gameSession.state != 'END':
+        while gameSession.activePlayer.user.isBot and gameSession.state != 'END':
             executeBotMove(gameSession, data['gameid'])
 
         if gameSession.state == 'END':
@@ -244,10 +244,7 @@ def on_surrenderGame(data):
 
 
 def executeBotMove(gameSession, room):
-    if len(gameSession.player1.tokenList) == 3 and len(gameSession.player2.tokenList) == 3:
-        move = getBestMove(gameSession, gameSession.activePlayer, 2)
-    else:
-        move = getBestMove(gameSession, gameSession.activePlayer, 3)
+    move = getBestMove(gameSession, gameSession.activePlayer, 3)
     if isinstance(move, Move):
         gameSession.executeMove(move)
         botMoveObject = buildGameObject(gameSession, move=move)

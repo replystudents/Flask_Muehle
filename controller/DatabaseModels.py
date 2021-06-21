@@ -33,9 +33,9 @@ class User(db.Model):
 class Game(db.Model):
 	__tablename__ = 'game'
 	gameId = db.Column(db.String(36), primary_key=True)
-	playerId1 = db.Column(db.String(100), db.ForeignKey('user.id'), nullable=False)
-	playerId2 = db.Column(db.String(100), db.ForeignKey('user.id'), nullable=False)
-	winner = db.Column(db.String(100), db.ForeignKey('user.id'), nullable=True)
+	playerId1 = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+	playerId2 = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+	winner = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
 	date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 	positions = db.Column(db.JSON)
 

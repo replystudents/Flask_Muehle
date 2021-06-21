@@ -8,6 +8,9 @@ points_for_win = 200
 
 
 def getBestMove(game: Muehle, player: Player, depth):
+	if len(game.possibleMoves) >= 25:
+		# otherwise computation time is to long
+		depth -= 1
 	_, best_move = max_move(game, depth, player)
 	return best_move
 
@@ -43,7 +46,7 @@ def min_move(game: Muehle, depth, player):
 def max_move(game: Muehle, depth, player):
 	possible_moves = game.possibleMoves
 	if depth == 0 or len(possible_moves) == 0 or game.state == states['end']:
-		return (rating(game, player, depth), '')
+		return rating(game, player, depth), ''
 	else:
 		best_rating = float('-inf')
 		best_moves = []
@@ -70,7 +73,7 @@ def max_move(game: Muehle, depth, player):
 			elif move_rating > best_rating:
 				best_rating = move_rating
 				best_moves = [move]
-		return (best_rating, random.choice(best_moves))
+		return best_rating, random.choice(best_moves)
 
 
 def rating(game: Muehle, player, depth):
@@ -101,21 +104,3 @@ def rating(game: Muehle, player, depth):
 		else:
 			value -= len(game.possibleMoves) * points_for_possible_move  # possible moves for opponent
 	return value
-
-
-if __name__ == '__main__':
-	muehle = Muehle('player1', 'player2')
-	muehle.printBoard()
-	for i in range(25):
-		print(f'Iteration: {i}')
-		ai_rating, move = max_move(muehle, 3, muehle.activePlayer)
-		print(f'Rating {move.player.playerNumber}: {ai_rating}')
-		print(f'Move {move.player.playerNumber}: {move.move}')
-		muehle.executeMove(move)
-		muehle.printBoard()
-		ai_rating, move = max_move(muehle, 3, muehle.activePlayer)
-		print(f'Rating {move.player.playerNumber}: {ai_rating}')
-		print(f'Move {move.player.playerNumber}: {move.move}')
-		muehle.executeMove(move)
-		muehle.printBoard()
-		print(f'Tokens Player1: {len(muehle.player1.tokenList)}, Tokens Player2: {len(muehle.player2.tokenList)}')

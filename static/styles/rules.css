@@ -5,3 +5,8 @@
     color: var(--font-color);
     padding: 20px;
 }
+
+.rules_container img {
+    display: block;
+    margin: auto;
+}
