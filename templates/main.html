@@ -28,6 +28,7 @@
             legend: {position: 'none'},
             pieSliceBorderColor: "transparent"
         };
+        // Draw only, if Data exists
         if (parseInt('{{statistics.0}}') !== 0 || parseInt('{{statistics.1}}') !== 0 || parseInt('{{statistics.2}}') !== 0) {
             const chart = new google.visualization.PieChart(document.getElementById('piechart'));
 
