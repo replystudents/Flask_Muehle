@@ -62,14 +62,18 @@ svg.on('click', function () {
         if (gamedata.activePlayer === username) {
             if (gamedata.state === 'PLACE_PHASE') {
                 let mouse = d3.mouse(this)
-                let elem = document.elementFromPoint(mouse[0] * coordinateFactorX + coordinateOffsetX, mouse[1] * coordinateFactorY + coordinateOffsetY)
+                let elem = document.elementFromPoint(
+                    mouse[0] * coordinateFactorX + coordinateOffsetX,
+                    mouse[1] * coordinateFactorY + coordinateOffsetY)
                 if (elem.classList.contains("dot")) {
                     let pos = elem.id.split('-')
                     placeTokenOnBoard(pos[1], pos[2])
                 }
             } else if (gamedata.state === 'MILL') {
                 let mouse = d3.mouse(this)
-                let elem = document.elementFromPoint(mouse[0] * coordinateFactorX + coordinateOffsetX, mouse[1] * coordinateFactorY + coordinateOffsetY)
+                let elem = document.elementFromPoint(
+                    mouse[0] * coordinateFactorX + coordinateOffsetX,
+                    mouse[1] * coordinateFactorY + coordinateOffsetY)
                 if (elem.classList.contains("player") && !elem.classList.contains(player)) {
                     removeTokenFromBoard(elem.id.split('-')[1], elem.id)
                 }
@@ -184,7 +188,6 @@ let startposition = [], current
  * save starting position
  */
 function dragstarted() {
-    setFactorOffset()
     if (gamedata.state === 'PLAYING_PHASE') {
         current = d3.select(this)
         current.style('cursor', 'grabbing')
@@ -199,7 +202,6 @@ function dragstarted() {
  * set position of stone on mouse
  */
 function dragged() {
-    setFactorOffset()
     if (gamedata.state === 'PLAYING_PHASE') {
         current = d3.select(this)
         current
@@ -215,35 +217,18 @@ function dragged() {
 function dragended() {
     setFactorOffset()
     if (gamedata.state === 'PLAYING_PHASE') {
-        hideStone(true)
+        current
+            .attr('cx', startposition[0])
+            .attr('cy', startposition[1])
         current.style('cursor', 'grab')
         let mouse = d3.mouse(this)
-        let elem = document.elementFromPoint(mouse[0] * coordinateFactorX + coordinateOffsetX, mouse[1] * coordinateFactorY + coordinateOffsetY)
-        hideStone(false)
+        let elem = document.elementFromPoint(
+            mouse[0] * coordinateFactorX + coordinateOffsetX,
+            mouse[1] * coordinateFactorY + coordinateOffsetY)
         if (elem.classList.contains("dot")) {
             let pos = elem.id.split('-')
             moveToken(current.attr('id'), pos[1], pos[2])
-            current
-                .attr('cx', startposition[0])
-                .attr('cy', startposition[1])
-        } else {
-            current
-                .attr('cx', startposition[0])
-                .attr('cy', startposition[1])
         }
-
-    }
-}
-
-/**
- * hide and unhide stone to check the element behind it
- * @param hide
- */
-function hideStone(hide) {
-    if (hide) {
-        current.attr('style', 'display:none;')
-    } else {
-        current.attr('style', 'display:inline;')
     }
 }
 
