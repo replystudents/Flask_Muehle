@@ -23,6 +23,7 @@ socketio = SocketIO(app, async_mode="threading")
 gameHandler = GameHandler()
 
 
+# get the user of the current session
 def getUser():
     if "username" in session:
         username = session["username"]
@@ -36,6 +37,7 @@ def getUser():
     return user
 
 
+# route: main page
 @app.route('/')
 def main_page():
     user = getUser()
@@ -47,12 +49,14 @@ def main_page():
                            leaderboard=leaderboard, statistics=statistics)
 
 
+# route: rules page
 @app.route('/rules')
 def rules_page():
     user = getUser()
     return render_template('rules.html', user=user)
 
 
+# route: game page without gameid
 @app.route('/game/', methods=['POST', 'GET'])
 def game():
     user = getUser()
@@ -71,6 +75,7 @@ def game():
         return render_template('game.html', user=user, newgame=True)
 
 
+# route: game page with gameid
 @app.route('/game/<gameid>/')
 def game_page(gameid=None):
     user = getUser()
@@ -95,6 +100,7 @@ def game_page(gameid=None):
         return redirect('/game/')
 
 
+# route: history page
 @app.route('/history')
 def history_page():
     user = getUser()
@@ -102,11 +108,13 @@ def history_page():
     return render_template('history.html', user=user, game_history=game_history)
 
 
+# socket: send Username to Client when the SocketIO connection is established
 @socketio.on('connected')
 def on_connected(data):
     emit('username', str(getUser().username))
 
 
+# socket: client requests to join a game based on the gameid in their url
 @socketio.on('join')
 def on_join(data):
     username = getUser().username
@@ -136,6 +144,7 @@ def on_join(data):
         send('Verbindung zu ' + username + 'aufgebaut.', to=room)
 
 
+# socket: player wants to place a token on the board
 @socketio.on('placeTokenOnBoard')
 def on_placeToken(data):
     gameSession = gameHandler.getGame(data['gameid'])
@@ -158,6 +167,7 @@ def on_placeToken(data):
         emit('ErrorPlacing', buildGameObject(gameSession, error=err), to=data['gameid'])
 
 
+# socket: player wants to move a token on board
 @socketio.on('moveToken')
 def on_moveToken(data):
     gameSession = gameHandler.getGame(data['gameid'])
@@ -180,14 +190,7 @@ def on_moveToken(data):
         emit('ErrorMoving', buildGameObject(gameSession, error=err), to=data['gameid'])
 
 
-@socketio.on('leave')
-def on_leave(data):
-    username = getUser().username
-    room = data['room']
-    leave_room(room)
-    send(username + ' has left the room.', to=room)
-
-
+# socket: player wants to remove a token
 @socketio.on('removeToken')
 def on_removeToken(data):
     gameSession = gameHandler.getGame(data['gameid'])
@@ -207,6 +210,16 @@ def on_removeToken(data):
         emit('ErrorRemoving', buildGameObject(gameSession, error=err), to=data['gameid'])
 
 
+# socket: client leaves the socketIO room, when the game is finished or the event beforeunload fires
+@socketio.on('leave')
+def on_leave(data):
+    username = getUser().username
+    room = data['room']
+    leave_room(room)
+    send(username + ' has left the room.', to=room)
+
+
+# socket: client wants to get the up-to-date board
 @socketio.on('syncGame')
 def on_syncGame(data):
     gameSession = gameHandler.getGame(data['gameid'])
@@ -214,6 +227,7 @@ def on_syncGame(data):
     emit('syncGame', data, to=data['gameid'])
 
 
+# socket: player requests to end the game in a tie
 @socketio.on('tieGame')
 def on_tieGame(data):
     gameSession = gameHandler.getGame(data['gameid'])
@@ -230,6 +244,7 @@ def on_tieGame(data):
         emit('wantsToTie', to=data['gameid'])
 
 
+# socket: player wants to surrender
 @socketio.on('surrenderGame')
 def on_surrenderGame(data):
     gameSession = gameHandler.getGame(data['gameid'])
@@ -243,6 +258,7 @@ def on_surrenderGame(data):
     gameHandler.saveGameInDB(data['gameid'])
 
 
+# execute a bot move and update the players game state
 def executeBotMove(gameSession, room):
     move = getBestMove(gameSession, gameSession.activePlayer, 3)
     if isinstance(move, Move):
@@ -256,10 +272,14 @@ def executeBotMove(gameSession, room):
             emit('tokenMoved', botMoveObject, to=room)
 
 
+# build an object from gamedata that can be send to the players
 def buildGameObject(gamedata, move=None, error=None):
-    gameObject = {'activePlayer': gamedata.activePlayer.user.username,
-                  'player1': gamedata.player1.user.username, 'player2': gamedata.player2.user.username,
-                  'state': gamedata.state}
+    gameObject = {
+        'activePlayer': gamedata.activePlayer.user.username,
+        'player1': gamedata.player1.user.username,
+        'player2': gamedata.player2.user.username,
+        'state': gamedata.state
+    }
     if move and isinstance(move, Move):
         if move.delete:
             if move.player.playerNumber == 'P1':
@@ -282,5 +302,6 @@ def buildGameObject(gamedata, move=None, error=None):
     return gameObject
 
 
+# run flask server
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0')
