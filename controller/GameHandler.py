@@ -1,3 +1,6 @@
+"""
+Author: Lorenz Adomat
+"""
 import uuid
 
 from controller.Muehle import Muehle
@@ -7,6 +10,7 @@ import random
 from typing import Union
 
 
+# The GameQueueObject represents a new game, where one Player is waiting for another player
 class GameQueueObject:
 
 	def __init__(self, gameId, player):
@@ -18,6 +22,7 @@ class GameQueueObject:
 		self.player2 = player
 
 
+# The GameHandler handles the games, which have not been started and the active games
 class GameHandler:
 
 	def __init__(self):
@@ -75,37 +80,3 @@ class GameHandler:
 					"player2": game.player2.user.username
 				})
 		return games
-
-	def getFinishedUserGames(self, user):
-		games = []
-		finishedGames = Game.query.filter((Game.playerId1 == user.id) | (Game.playerId2 == user.id)).order_by(
-			Game.date.desc()).all()
-		for game in finishedGames:
-			player1 = User.query.filter((User.id == game.playerId1)).first()
-			player2 = User.query.filter((User.id == game.playerId2)).first()
-			if player1 and player2:
-				games.append({
-					"player1": player1.username,
-					"player2": player2.username,
-					"resultP1": "1" if (game.winner and int(game.winner) == player1.id) else "0",
-					"resultP2": "1" if (game.winner and int(game.winner) == player2.id) else "0",
-					"date": f'{game.date.day}.{game.date.month}.{game.date.year}'
-
-				})
-		return games
-
-	def getUserStatistics(self, user):
-		draw = 0
-		win = 0
-		loss = 0
-		userGames = self.getFinishedUserGames(user)
-		for game in userGames:
-			if game['resultP1'] == game['resultP2']:
-				draw += 1
-			elif game['resultP1'] == '1' and game['player1'] == user.username:
-				win += 1
-			elif game['resultP2'] == '1' and game['player2'] == user.username:
-				win += 1
-			else:
-				loss += 1
-		return (win, loss, draw)

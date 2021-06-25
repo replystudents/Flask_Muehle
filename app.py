@@ -1,6 +1,10 @@
+"""
+Author: Gideon Weber & Lorenz Adomat
+"""
+
 from flask import Flask, render_template, request, session, redirect
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
-from controller.DatabaseModels import db, User, Game, getLeaderboard
+from controller.DatabaseModels import db, User, getLeaderboard, getFinishedUserGames, getUserStatistics
 from controller.GameHandler import GameHandler, GameQueueObject
 from controller.Muehle import Muehle, Move
 from controller.AI import getBestMove
@@ -19,6 +23,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 db.create_all(app=app)
 
+# async_mode = "treading" because otherwise different user sessions influence each other
+# without it would lead to performance issues when the minimax Algorithm is calculating
 socketio = SocketIO(app, async_mode="threading")
 gameHandler = GameHandler()
 
@@ -42,9 +48,9 @@ def getUser():
 def main_page():
     user = getUser()
     active_games = gameHandler.getActiveUserGames(user)
-    game_history = gameHandler.getFinishedUserGames(user)
+    game_history = getFinishedUserGames(user)
     leaderboard = getLeaderboard()
-    statistics = gameHandler.getUserStatistics(user)
+    statistics = getUserStatistics(user)
     return render_template('main.html', user=user, active_games=active_games, game_history=game_history,
                            leaderboard=leaderboard, statistics=statistics)
 
@@ -56,7 +62,7 @@ def rules_page():
     return render_template('rules.html', user=user)
 
 
-# route: game page without gameid
+# route: game page without gameid (to start a new game)
 @app.route('/game/', methods=['POST', 'GET'])
 def game():
     user = getUser()
@@ -80,7 +86,6 @@ def game():
 def game_page(gameid=None):
     user = getUser()
     if gameid:
-        game = None
         try:
             game = gameHandler.getGame(gameid)
         except Exception:
@@ -91,10 +96,7 @@ def game_page(gameid=None):
             else:
                 return redirect('/game/')
         if isinstance(game, GameQueueObject) and game.player1.id != user.id:  # if it´s a game, which has not started
-            # print('REGISTERING PLAYER')
             game.registerPlayer(user)
-            # gameHandler.startGame(gameid)
-            # print("READY TO START GAME")
         return render_template('game.html', user=user, gameid=gameid)
     else:
         return redirect('/game/')
@@ -136,7 +138,6 @@ def on_join(data):
     # if a second player has joined, the game can be started
     elif isinstance(game, GameQueueObject) and game.player2:
         gameSession = gameHandler.startGame(data['gameid'])
-
         emit('startGame', buildGameObject(gameSession), to=room)
     elif isinstance(game, Muehle):
         emit('startGame', buildGameObject(game), to=room),
@@ -145,16 +146,20 @@ def on_join(data):
 
 
 # socket: player wants to place a token on the board
-@socketio.on('placeTokenOnBoard')
+@socketio.on('placeToken')
 def on_placeToken(data):
     gameSession = gameHandler.getGame(data['gameid'])
     try:
         if gameSession.player1.user.id == getUser().id:
             move = gameSession.placeTokenOnBoard(gameSession.player1.startTokenList[0], int(data["pos_x"]),
                                                  int(data["pos_y"]))
-        else:
+        elif gameSession.player2.user.id == getUser().id:
             move = gameSession.placeTokenOnBoard(gameSession.player2.startTokenList[0], int(data["pos_x"]),
                                                  int(data["pos_y"]))
+        else:
+            # Unknown Player wants to make a move
+            return
+
         emit('tokenPlaced', buildGameObject(gameSession, move=move), to=data['gameid'])
 
         # if bot has to make a move
@@ -175,9 +180,12 @@ def on_moveToken(data):
         if gameSession.player1.user.id == getUser().id:
             move = gameSession.move(gameSession.player1.getToken(int(data["token"])), int(data["pos_x"]),
                                     int(data["pos_y"]))
-        else:
+        elif gameSession.player2.user.id == getUser().id:
             move = gameSession.move(gameSession.player2.getToken(int(data["token"])), int(data["pos_x"]),
                                     int(data["pos_y"]))
+        else:
+            # Unknown Player wants to make a move
+            return
 
         emit('tokenMoved', buildGameObject(gameSession, move), to=data['gameid'])
 
@@ -197,15 +205,18 @@ def on_removeToken(data):
     try:
         if gameSession.player1.user.id == getUser().id:
             move = gameSession.removeTokenFromBoard(gameSession.player2.getToken(int(data["token"])))
-        else:
+        elif gameSession.player2.user.id == getUser().id:
             move = gameSession.removeTokenFromBoard(gameSession.player1.getToken(int(data["token"])))
+        else:
+            # Unknown Player wants to make a move
+            return
+
         emit('tokenRemoved', buildGameObject(gameSession, move=move), to=data['gameid'])
 
         while gameSession.activePlayer.user.isBot and gameSession.state != 'END':
             executeBotMove(gameSession, data['gameid'])
         if gameSession.state == 'END':
             gameHandler.saveGameInDB(data['gameid'])
-
     except Exception as err:
         emit('ErrorRemoving', buildGameObject(gameSession, error=err), to=data['gameid'])
 
@@ -233,8 +244,12 @@ def on_tieGame(data):
     gameSession = gameHandler.getGame(data['gameid'])
     if gameSession.player1.user.id == getUser().id:
         gameSession.player1.tie = True
-    else:
+    elif gameSession.player2.user.id == getUser().id:
         gameSession.player2.tie = True
+    else:
+        # Unknown Player wants to tie
+        return
+
     if gameSession.player1.tie and gameSession.player2.tie:
         gameSession.winner = None
         gameSession.state = 'END'
@@ -250,8 +265,11 @@ def on_surrenderGame(data):
     gameSession = gameHandler.getGame(data['gameid'])
     if gameSession.player1.user.id == getUser().id:
         gameSession.winner = gameSession.player2
-    else:
+    elif gameSession.player2.user.id == getUser().id:
         gameSession.winner = gameSession.player1
+    else:
+        # Unknown Player wants to surrender
+        return
 
     gameSession.state = 'END'
     emit('updateGameState', buildGameObject(gameSession), to=data['gameid'])

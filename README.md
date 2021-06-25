@@ -5,16 +5,7 @@
 
 # requirements
 ```bash
-pip install flask-socketio
-pip install eventlet
+pip install -r requirements.txt
 ```
 
 
-# TODO list
--Smartphone bugs
-
-evtl. 
-- Anmelden und registrieren
-
-Am ende: 
-- code refactoring (zusammen)

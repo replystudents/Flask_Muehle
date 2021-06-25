@@ -1,3 +1,6 @@
+"""
+Author: Lorenz Adomat
+"""
 from collections import deque
 from copy import deepcopy
 
@@ -21,6 +24,7 @@ states = {
 number_of_pieces = 9
 
 
+# represents one move in the game
 class Move:
 
 	def __init__(self, player, token, pos_x=None, pos_y=None, place=False, delete=False):
@@ -41,6 +45,7 @@ class Move:
 			self.move = f'{player.playerNumber}-mv-{token.id} - ({token.pos_x}, {token.pos_y}) -> ({pos_x},{pos_y})'
 
 
+# represents one Token in the game
 class Token:
 
 	def __init__(self, player, number):
@@ -62,6 +67,7 @@ class Token:
 		return f"Token({self.player.playerNumber} | {self.pos_x}, {self.pos_y})"
 
 
+# represents one Player of a game
 class Player:
 
 	def __init__(self, user, PlayerNumber):
@@ -80,6 +86,7 @@ class Player:
 				return token
 
 
+# represents one game
 class Muehle:
 
 	def __init__(self, user1, user2):
@@ -111,6 +118,7 @@ class Muehle:
 		else:
 			self.move(move=move, tmpMove=tmpMove)
 
+	# places the token of a player on the board
 	def placeTokenOnBoard(self, token: Token = None, pos_x=None, pos_y=None, move: Move = None, tmpMove=False) -> Move:
 		if token and token.player != self.activePlayer:
 			raise Exception(f'It´s not the player´s turn ({token.player.user.username})')
@@ -141,6 +149,7 @@ class Muehle:
 		else:
 			raise Exception('Can not execute placeToken, cause game is not in PLACE_PHASE')
 
+	# removes a token of a player from the board
 	def removeTokenFromBoard(self, token: Token = None, move: Move = None, tmpMove=False) -> Move:
 		x = token.pos_x if token else move.pos_x1
 		y = token.pos_y if token else move.pos_y1
@@ -166,6 +175,7 @@ class Muehle:
 				self.winner = winner
 		return move
 
+	# moves the token of a player on the board
 	def move(self, token: Token = None, pos_x=None, pos_y=None, move=None, tmpMove=False) -> Move:
 		if token and token.player != self.activePlayer:
 			raise Exception(f'It´s not the player´s turn ({token.player.user.username})')
@@ -200,6 +210,8 @@ class Muehle:
 		else:
 			raise Exception('Can not execute move, cause game is not in PLAYING_PHASE')
 
+	# reverts the last executed move
+	# is needed, so that the minimax Algorithm can try every possible move
 	def undoLastMove(self):
 		if len(self.moves) > 0:
 			lastMove = self.moves.pop()
@@ -256,10 +268,12 @@ class Muehle:
 			else:
 				return self.player1
 
+	# checks if a given move is valid
 	def isValidMove(self, token: Token, pos2_x, pos2_y, move: Move = None) -> bool:
 		move = move or Move(player=self.activePlayer, token=token, pos_x=pos2_x, pos_y=pos2_y)
 		return any(m.move == move.move for m in self.possibleMoves)
 
+	# checks if a token is part of a mill
 	def isMill(self, player, token: Token) -> bool:
 		x_pos = token.pos_x
 		y_pos = token.pos_y
@@ -267,6 +281,7 @@ class Muehle:
 			return True
 		return False
 
+	# needed for isMill Function
 	def isRowComplete(self, x, y, player: Player) -> bool:
 		if x == 0 or x == 6:
 			if self.board[x][0] != 'X' and self.board[x][3] != 'X' and self.board[x][
@@ -296,6 +311,7 @@ class Muehle:
 				return True
 		return False
 
+	# needed for isMill Function
 	def isColumnComplete(self, y, x, player: Player) -> bool:
 		if y == 0 or y == 6:
 			if self.board[0][y] != 'X' and self.board[3][y] != 'X' and self.board[6][
@@ -325,6 +341,7 @@ class Muehle:
 				return True
 		return False
 
+	# returns all possible moves for the active Player
 	def getPossibleMoves(self):
 		possibleMoves = []
 		if self.state == states['placePhase']:
@@ -431,6 +448,7 @@ class Muehle:
 		for i in range(7):
 			print(self.board[i])
 
+	# returns a minified version of the board, which can be stored in the database
 	def getMinifiedBoard(self):
 		miniBoard = []
 		for x in range(len(self.board)):
@@ -446,6 +464,7 @@ class Muehle:
 		return miniBoard
 
 	# docs: https://www.spielezar.ch/blog/spielregeln/muehle-spielregeln
+	# checks if a game has finished
 	def isGameFinished(self) -> (bool, Player):
 		if len(self.player1.startTokenList) == 0 and len(
 				self.player1.tokenList) < 3:  # player has less than 3 tokens -> other player wins
@@ -464,13 +483,3 @@ class Muehle:
 			return True, None
 
 		return False, None
-
-
-# for testing purpose
-if __name__ == '__main__':
-	muehle = Muehle('player1', 'player2')
-	muehle.printBoard()
-	token = muehle.activePlayer.startTokenList[0]
-	muehle.placeTokenOnBoard(token, 0, 0)
-	muehle.placeTokenOnBoard(muehle.activePlayer.startTokenList[0], 0, 3)
-	muehle.printBoard()

@@ -1,3 +1,6 @@
+/**
+ * Author: Lorenz Adomat
+ */
 let sidebarState = 0
 
 function expandSidebar() {

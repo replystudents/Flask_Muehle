@@ -1,3 +1,6 @@
+"""
+Author: Lorenz Adomat
+"""
 import datetime
 
 from flask_sqlalchemy import SQLAlchemy
@@ -47,13 +50,7 @@ class Game(db.Model):
 		self.positions = positions
 
 
-def deleteTmpUsers():
-	tmpUsers = User.query.filter_by(isTmpUser=True)
-	db.session.delete(tmpUsers)
-	db.commit()
-	pass
-
-
+# queries Leaderboard from the database, which is used on the start-page
 def getLeaderboard():
 	leaderboardQuery = User.query.join(Game, (Game.winner == User.id)).add_columns(
 		Game.winner).all()
@@ -72,3 +69,41 @@ def getLeaderboard():
 	leaderboard.sort(key=lambda item: item[1], reverse=True)
 
 	return leaderboard
+
+
+# get all finished games of one user
+def getFinishedUserGames(user):
+	games = []
+	finishedGames = Game.query.filter((Game.playerId1 == user.id) | (Game.playerId2 == user.id)).order_by(
+		Game.date.desc()).all()
+	for game in finishedGames:
+		player1 = User.query.filter((User.id == game.playerId1)).first()
+		player2 = User.query.filter((User.id == game.playerId2)).first()
+		if player1 and player2:
+			games.append({
+				"player1": player1.username,
+				"player2": player2.username,
+				"resultP1": "1" if (game.winner and int(game.winner) == player1.id) else "0",
+				"resultP2": "1" if (game.winner and int(game.winner) == player2.id) else "0",
+				"date": f'{game.date.day}.{game.date.month}.{game.date.year}'
+
+			})
+	return games
+
+
+# get win/draw/loss statistics for one player
+def getUserStatistics(user):
+	draw = 0
+	win = 0
+	loss = 0
+	userGames = getFinishedUserGames(user)
+	for game in userGames:
+		if game['resultP1'] == game['resultP2']:
+			draw += 1
+		elif game['resultP1'] == '1' and game['player1'] == user.username:
+			win += 1
+		elif game['resultP2'] == '1' and game['player2'] == user.username:
+			win += 1
+		else:
+			loss += 1
+	return (win, loss, draw)

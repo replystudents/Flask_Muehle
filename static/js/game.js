@@ -1,4 +1,8 @@
 /**
+ * Author: Gideon Weber
+ */
+
+/**
  * Set Offset and Factor for mouse functionality in the svg
  */
 let coordinateOffsetX, coordinateOffsetY, coordinateFactorX, coordinateFactorY
@@ -67,7 +71,7 @@ svg.on('click', function () {
                     mouse[1] * coordinateFactorY + coordinateOffsetY)
                 if (elem.classList.contains("dot")) {
                     let pos = elem.id.split('-')
-                    placeTokenOnBoard(pos[1], pos[2])
+                    placeToken(pos[1], pos[2])
                 }
             } else if (gamedata.state === 'MILL') {
                 let mouse = d3.mouse(this)
@@ -75,7 +79,7 @@ svg.on('click', function () {
                     mouse[0] * coordinateFactorX + coordinateOffsetX,
                     mouse[1] * coordinateFactorY + coordinateOffsetY)
                 if (elem.classList.contains("player") && !elem.classList.contains(player)) {
-                    removeTokenFromBoard(elem.id.split('-')[1], elem.id)
+                    removeToken(elem.id.split('-')[1], elem.id)
                 }
             }
         }
@@ -87,8 +91,8 @@ svg.on('click', function () {
  * @param pos_x
  * @param pos_y
  */
-function placeTokenOnBoard(pos_x, pos_y) {
-    socket.emit('placeTokenOnBoard', {
+function placeToken(pos_x, pos_y) {
+    socket.emit('placeToken', {
         'gameid': gameid,
         'player': player,
         'token': d3.selectAll('circle.' + player)._groups['0'].length,
@@ -137,7 +141,7 @@ function addStone(playername, pos_x, pos_y) {
  * @param token
  * @param tokenid
  */
-function removeTokenFromBoard(token, tokenid) {
+function removeToken(token, tokenid) {
     socket.emit('removeToken', {
         'gameid': gameid,
         'player': player,
