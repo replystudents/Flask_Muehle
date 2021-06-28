@@ -46,7 +46,7 @@ class GameHandler:
 			self.gameQueue.pop(gameId)
 			return game
 		else:
-			return Exception('Second Player not registered')
+			raise Exception('Second Player not registered')
 
 	def deleteGame(self, gameId):
 		if self.gameQueue.get(gameId):
